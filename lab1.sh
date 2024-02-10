@@ -1,9 +1,43 @@
 #!/bin/bash
 set +x
 
-optstring="-dl"
+optstring=""
+searchdir="./"
+
+while getopts dxl opt
+do
+    case $opt in
+        *x*) optstring="$optstring""$opt" ;;
+        *l*) optstring="$optstring""$opt" ;;
+        *d*) optstring="$optstring""$opt" ;;
+        *) printf >&2 "Unrecognized option $opt\n"; exit 1 ;;
+    esac
+done
+
+echo directory
+echo $searchdir
+
+mask=""
+
+if [[ $optstring =~ "x" ]] 
+then
+    mask="$mask""-"
+fi
+
+if [[ $optstring =~ "l" ]] 
+then
+    mask="$mask""l"
+fi
+
+if [[ $optstring =~ "d" ]]
+then
+    mask="$mask""d"
+fi
+
+echo mask
+echo $mask
+
 curopt=""
-search_dir="./"
 
 
     #echo file permissions
@@ -12,15 +46,10 @@ do
     curopt=$(stat -c%A --format=%A "$entry")
     curopt=${curopt:0:1}
     
-#    if [ "$optstring"==*"$curopt"* ]
-#    then
-#	echo "$entry"
-#    fi
-
-    case "$optstring" in 
+    case "$mask" in 
 	*"$curopt"*)
-	     echo $entry
-	     echo $(stat -c%A --format=%A "$entry")
+#	     echo $entry
+#	     echo $(stat -c%A --format=%A "$entry")
 	    ;;
     esac
 done
