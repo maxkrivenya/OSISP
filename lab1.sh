@@ -1,31 +1,26 @@
 #!/bin/bash
-optstring="ldf"
+set +x
+
+optstring="-dl"
 curopt=""
-search_dir=./
-
-    #list
-#for entry in "$search_rit"/*
-#do
-#    echo "$entry"
-#done
-
-    #echo getopt
-#while getopts ${optstring} curopt
-#do
-#    echo $curopt
-#done
+search_dir="./"
 
 
     #echo file permissions
 for entry in "$search_rit"/*
 do
-#    curopt= $((stat -c%A  $entry))
-    curopt = $(stat -c%A $entry)
-    echo $curopt
-    firstlet=${curopt:0:1}
-    echo $firstlet
-#    if [ "$curopt" = "d" ]
+    curopt=$(stat -c%A --format=%A "$entry")
+    curopt=${curopt:0:1}
+    
+#    if [ "$optstring"==*"$curopt"* ]
 #    then
 #	echo "$entry"
 #    fi
+
+    case "$optstring" in 
+	*"$curopt"*)
+	     echo $entry
+	     echo $(stat -c%A --format=%A "$entry")
+	    ;;
+    esac
 done
