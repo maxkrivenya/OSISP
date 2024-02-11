@@ -1,4 +1,0 @@
-getopt while possible;
-if optind == 0 or -1 ?? ??
-then
-dirp = diropen(argv[optind])
