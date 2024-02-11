@@ -68,7 +68,7 @@ int main(int argc, char** argv){
 	
 	//find dir path in parameters [1/-1]
 	for(i=1; i < argc; i++){
-		if(argv[i][0] != ' ' && dirp==NULL){
+		if(argv[i][0] != '-' && dirp==NULL){
 			dirp = opendir(argv[i]);
 		}
 
