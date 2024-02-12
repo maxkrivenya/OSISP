@@ -1,73 +1,31 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <cstring>
 #include <dirent.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <fcntl.h>
 #include <unistd.h>
 #define OPTMASK "fdls"
 #define DEFAULT_DIR "./"
-void printEntry(struct dirent* ent, char type){			//function for printing a single dir entry
-	if(ent==NULL){
-		return;
-	}
-	struct stat entstat;
-	int status = lstat(ent->d_name, &entstat);	//get entry status to see its filetype
-	if(status==-1){
-		perror("fstat failed");
-		exit(1);
-	}
-	switch(type){		//depending on what parameter is passed
-		case 'f':{
-			if(S_ISREG(entstat.st_mode)){			//if file, print
-				printf("\nFIL\t'%s'\n",ent->d_name); 
-			}
-			break;
-		}
-		case 'd':{
-			if(S_ISDIR(entstat.st_mode)){			//if dir, print
-				printf("\nDIR\t'%s'\n",ent->d_name);
-			}
-			break;
-		}
-		case 'l':{
-			if(S_ISLNK(entstat.st_mode)){			//if lnk, print
-				printf("\nLNK\t'%s'\n",ent->d_name);
-			}
-			break;
-		}
-		default:{
-			printf("\nweird printEntry type: '%c'", type);
-			break;
-		}
-	}
-	return;
-}
 
 int main(int argc, char** argv){
 	
 	//error checker
 	int flag = 0;
 	
-	//iterators
-	size_t i = 0; 
-	size_t j = 0;
-
-	//argv[i] size holder
-	size_t curr_arg_len=0;
-	
 	//sys vars
 	DIR* dirp = NULL;
 	struct dirent* ent = NULL;
 	struct stat entstat;
 	
+	//for getopt
 	char opt;
+
 	//flags for optparameters
 	bool fflag=false;
 	bool dflag=false;
 	bool lflag=false;
-	bool sflag=false;	
+	bool sflag=false;
+
 	do{
 		opt = getopt(argc,argv, OPTMASK);
 		if(opt!=-1){
@@ -97,7 +55,7 @@ int main(int argc, char** argv){
 		}
 		}
 	}while(opt!=-1);
-
+	
 	if(optind<argc){
 		dirp=opendir(argv[optind]);
 	}
@@ -109,6 +67,37 @@ int main(int argc, char** argv){
 		exit(1);
 	}
 	
+	if(!fflag && !dflag && !lflag){
+		fflag = 1;
+		dflag = 1;
+		lflag = 1;
+	}
+	ent=readdir(dirp);
+	
+	while(ent!=NULL){
+		flag=lstat(ent->d_name,&entstat);
+		if(flag==-1){
+			perror("stat failed");
+			exit(1);
+		}
+		if(S_ISREG(entstat.st_mode) && fflag){			//if file, print
+			printf("\nFIL\t'%s'\n",ent->d_name); 
+		}
+
+		if(S_ISLNK(entstat.st_mode) && lflag){			//if lnk, print
+			printf("\nLNK\t'%s'\n",ent->d_name);
+		}
+		if(S_ISDIR(entstat.st_mode) && dflag){			//if dir, print
+			printf("\nDIR\t'%s'\n",ent->d_name);
+//			pid_t childpid = fork();
+//			if(childPid==0){
+//				execve("./lab1v2",
+//				printf("\nChild process %d ended.\n",pid(childPid);
+//				exit(0);
+//			}
+		}
+		ent = readdir(dirp);
+	}
 
 	flag = closedir(dirp);
 	if(flag==-1){
