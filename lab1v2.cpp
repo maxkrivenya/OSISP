@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <locale.h>
 #define OPTMASK "ldfs"
 #define DEFAULT_DIR "./"
 int main(int argc, char** argv){
@@ -63,13 +64,16 @@ int main(int argc, char** argv){
 		perror("DIR open error");
 		exit(1);
 	}
+	if(sflag==1){
+		setlocale(LC_COLLATE,"en-US");
+	}	
 	if((fflag==0) && (dflag==0) && (lflag==0)){
 		fflag = 1;
 		dflag = 1;
 		lflag = 1;
 	}
-	
 	ent=readdir(dirp);
+	
 	while(ent!=NULL){
 		char* path = realpath(ent->d_name, NULL);
 		if(path!=NULL){
@@ -84,16 +88,16 @@ int main(int argc, char** argv){
 			){			
 				printf("%s\n", path);
 			}
-			ent = readdir(dirp);
-		}else{
-			ent=NULL;
 		}
+			ent = readdir(dirp);
 	}
+		
 
 	flag = closedir(dirp);
 	if(flag==-1){
 		perror("DIR failed to close!");
 		exit(1);
 	}
+
 	return 0;
 }
