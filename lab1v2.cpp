@@ -4,11 +4,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define OPTMASK "fdls"
+#define OPTMASK "ldfs"
 #define DEFAULT_DIR "./"
-
 int main(int argc, char** argv){
-	
+
 	//error checker
 	int flag = 0;
 	
@@ -19,7 +18,7 @@ int main(int argc, char** argv){
 	
 	//for getopt
 	char opt;
-
+	
 	//flags for optparameters
 	bool fflag=false;
 	bool dflag=false;
@@ -29,30 +28,28 @@ int main(int argc, char** argv){
 	do{
 		opt = getopt(argc,argv, OPTMASK);
 		if(opt!=-1){
-		switch(opt){
-			case 'f':{
-				fflag=true;
-				break;
+			switch(opt){
+				case 'f':{
+					fflag=true;
+					break;
+				}	
+				case 'd':{
+					dflag=true;
+					break;
+				}
+				case 'l':{
+					lflag=true;
+					break;
+				}
+				case 's':{
+					sflag=true;
+					break;
+				}
+				default:{
+					perror("unknown opt param");
+					exit(1);
+				}
 			}
-			case 'd':{
-				dflag=true;
-				break;
-			}
-			case 'l':{
-				lflag=true;
-				break;
-			}
-			case 's':{
-				sflag=true;
-				break;
-			}
-			default:{
-				//perror("unknown opt param");
-				//exit(1);
-				printf("\nunknown opt param:'%c'\n",opt);
-				break;
-			}
-		}
 		}
 	}while(opt!=-1);
 	
@@ -66,37 +63,31 @@ int main(int argc, char** argv){
 		perror("DIR open error");
 		exit(1);
 	}
-	
-	if(!fflag && !dflag && !lflag){
+	if((fflag==0) && (dflag==0) && (lflag==0)){
 		fflag = 1;
 		dflag = 1;
 		lflag = 1;
 	}
-	ent=readdir(dirp);
 	
+	ent=readdir(dirp);
 	while(ent!=NULL){
-		flag=lstat(ent->d_name,&entstat);
-		if(flag==-1){
-			perror("stat failed");
-			exit(1);
+		char* path = realpath(ent->d_name, NULL);
+		if(path!=NULL){
+			flag=lstat(ent->d_name,&entstat);
+			if(flag==-1){
+				perror("stat failed");
+				exit(1);
+			}
+			if	((S_ISREG(entstat.st_mode) && fflag) || 
+				 (S_ISLNK(entstat.st_mode) && lflag) || 
+				 (S_ISDIR(entstat.st_mode) && dflag)
+			){			
+				printf("%s\n", path);
+			}
+			ent = readdir(dirp);
+		}else{
+			ent=NULL;
 		}
-		if(S_ISREG(entstat.st_mode) && fflag){			//if file, print
-			printf("\nFIL\t'%s'\n",ent->d_name); 
-		}
-
-		if(S_ISLNK(entstat.st_mode) && lflag){			//if lnk, print
-			printf("\nLNK\t'%s'\n",ent->d_name);
-		}
-		if(S_ISDIR(entstat.st_mode) && dflag){			//if dir, print
-			printf("\nDIR\t'%s'\n",ent->d_name);
-//			pid_t childpid = fork();
-//			if(childPid==0){
-//				execve("./lab1v2",
-//				printf("\nChild process %d ended.\n",pid(childPid);
-//				exit(0);
-//			}
-		}
-		ent = readdir(dirp);
 	}
 
 	flag = closedir(dirp);
@@ -104,6 +95,5 @@ int main(int argc, char** argv){
 		perror("DIR failed to close!");
 		exit(1);
 	}
-
 	return 0;
 }
