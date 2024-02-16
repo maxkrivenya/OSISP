@@ -35,7 +35,11 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 		perror("scandir");
 		return;
 	}
-
+	if (n <= 2){
+		printf("\nDIR '%s' is empty\n",path);
+		return;
+	}
+	
 	//loop over dir entries
 	while (--n) {
 		char entry[POSIX_PATH_MAX] = {0};
