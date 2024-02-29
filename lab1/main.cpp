@@ -38,6 +38,7 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 		//printf("DIR '%s' is empty\n",path);
 		return;
 	}
+	
 	//loop over dir entries
 	while (--n) {
 		//printf("iterator n=%d\n",n);
