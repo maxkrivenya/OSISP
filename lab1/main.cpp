@@ -51,7 +51,7 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 			perror("stat failed");
 			return;
 		}		
-		if((S_ISREG(entstat.st_mode) && fflag) || (S_ISLNK(entstat.st_mode) && lflag) ){	
+		if((S_ISREG(entstat.st_mode) && fflag) || (S_ISLNK(entstat.st_mode) && lflag) || ((S_ISDIR(entstat.st_mode) && dflag))){
 			if(strcmp(namelist[n]->d_name,"..") && strcmp(namelist[n]->d_name,".")){	//if not '..' or '.'
 			printf("%s",path);								//print path
 				if(strcmp(path,"./")){					
@@ -60,16 +60,11 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 				printf("%s\n", namelist[n]->d_name);					//print filename
 			}
 		}
-		if(S_ISDIR(entstat.st_mode) && dflag){
+			
+		
+		if(S_ISDIR(entstat.st_mode)){
 			if(namelist[n]->d_name[0] != '.'){	//if not '..' or '.'
-				if(namelist[n]->d_name[0]=='.'){
-					printf("%s/",path);
-					printf("%s\n",namelist[n]->d_name[0]);
-				}else{
-				//	printf("\n=====================================================================%s=========================\n", entry);
-					printf("%s\n", entry);
-					actually_print_dir(entry,fflag,dflag,lflag,sflag);
-				}
+				actually_print_dir(entry,fflag,dflag,lflag,sflag);
 			}
 		}
 		free(namelist[n]);									//free entry 
