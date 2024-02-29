@@ -35,7 +35,7 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 		return;
 	}
 	if (n <= 2){
-		printf("DIR '%s' is empty\n",path);
+		//printf("DIR '%s' is empty\n",path);
 		return;
 	}
 	//loop over dir entries
@@ -65,7 +65,8 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 					printf("%s/",path);
 					printf("%s\n",namelist[n]->d_name[0]);
 				}else{
-					printf("\n=====================================================================%s=========================\n", entry);
+				//	printf("\n=====================================================================%s=========================\n", entry);
+					printf("%s\n", entry);
 					actually_print_dir(entry,fflag,dflag,lflag,sflag);
 				}
 			}
