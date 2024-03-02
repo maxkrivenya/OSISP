@@ -15,6 +15,8 @@
 #define CHILD_NAME "child"
 #define NAME_SIZE 10
 
+
+//EXTRACT value FROM name=value
 char* get_path_from_var(char* a){
     if(strlen(a) < CHILD_PATH_VAR_NAME){
     printf("too short\n");
@@ -28,6 +30,7 @@ int i = CHILD_PATH_VAR_NAME+1;
     return a;
 }
 
+//SEE IF name==CONST in name=value
 int begins(const char *a){
    int i = 0;
     for(; i < CHILD_PATH_VAR_NAME && i < strlen(a); i++){
@@ -41,6 +44,7 @@ int begins(const char *a){
     return 0;
 }
 
+//parse environ until i get something that begins with CONST
 char* get_path_from_environ(){
     for(int i = 0; environ[i] != NULL; i++){
         if(begins(environ[i])){
@@ -50,6 +54,7 @@ char* get_path_from_environ(){
     return NULL;
 }
 
+//parse envp[] until i get something that begins with CONST
 char* get_path_from_env(char* envp[]){
     for (char **env = envp; *env != 0; env++){
         if(begins(*env)){
@@ -59,6 +64,7 @@ char* get_path_from_env(char* envp[]){
     return NULL;
 }
 
+//getenv() with a check 
 char* get_path_from_getenv(){
     char* child_path = getenv(CHILD_PATH);
 
@@ -69,7 +75,9 @@ char* get_path_from_getenv(){
     return child_path; 
 }
 
+
 int main(int argc, char **argv, char **envp){
+
     pid_t pid;
     int flag = 0;
     char get;
@@ -80,29 +88,31 @@ int main(int argc, char **argv, char **envp){
         exit(EXIT_FAILURE);
     }
 
-    char* name = (char*)calloc(NAME_SIZE,1);
+    char* name = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
     (void)strcat(name,  CHILD_NAME);
 
     do{
         fflush(stdin);
-        get = getc(stdin);
-        getc(stdin);
-        if(get == 'q'){
+        get = getc(stdin);  //read command symbol
+        getc(stdin);        //remove \n from stdin
+        
+        if(get == 'q'){             //exit on command     
             puts("parent exit");
             free(name);
             exit(EXIT_SUCCESS);
         }
+
         pid = fork();
 
         switch (pid) {
-            case -1:{
+            case -1:{                           //fork failed
                         perror("fork");
                         free(name);
                         exit(EXIT_FAILURE);
 
                     }
 
-            case 0:{
+            case 0:{                            //for forked
                        char* child_path = NULL;
                        switch (get) {
                            case '+':{
@@ -125,17 +135,20 @@ int main(int argc, char **argv, char **envp){
                                        break;
                                    }
                        }
+                            //update process name 
                        name[5] = '0' + counter / 10;
                        name[6] = '0' + counter % 10;
-                       argv[0] = name;
+                       argv[0] = name;            
+
                        flag = execve(child_path, argv, envp);
                        if(flag == -1){
                            printf("execve error\n");
                            exit(EXIT_FAILURE);
                        }
+                   
                    }
 
-            default:{
+            default:{       //for parent
                         counter++;
                         printf("child : %jd\n", (intmax_t) pid);
                         wait(&flag);
