@@ -4,7 +4,6 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
-#include <locale.h>
 #include <cstring>
 #define OPTMASK "ldfs"
 #define DEFAULT_DIR "./"
@@ -38,7 +37,7 @@ void actually_print_dir(const char* path, bool fflag, bool dflag, bool lflag, bo
 		//printf("DIR '%s' is empty\n",path);
 		return;
 	}
-	
+
 	//loop over dir entries
 	while (--n) {
 		//printf("iterator n=%d\n",n);
