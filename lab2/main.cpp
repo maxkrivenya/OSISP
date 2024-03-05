@@ -135,17 +135,25 @@ int main(int argc, char **argv, char **envp){
                                        break;
                                    }
                        }
-                            //update process name 
-                       name[5] = '0' + counter / 10;
-                       name[6] = '0' + counter % 10;
-                       argv[0] = name;            
+                       
+                        
+                       if(get == '+' || get == '&' || get == '*'){
+                           //update process name 
+                           name[5] = '0' + counter / 10;
+                           name[6] = '0' + counter % 10;
+                           argv[0] = name;            
 
-                       flag = execve(child_path, argv, envp);
-                       if(flag == -1){
-                           printf("execve error\n");
-                           exit(EXIT_FAILURE);
+                           flag = execve(child_path, argv, envp);
+                           if(flag == -1){
+                               printf("execve error\n");
+                               exit(EXIT_FAILURE);
+                           }
                        }
-                   
+                       else{
+                           printf("exiting\n");
+                           exit(1);
+                       }
+
                    }
 
             default:{       //for parent
