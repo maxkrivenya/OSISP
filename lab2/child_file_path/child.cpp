@@ -7,20 +7,9 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#include "lab2.h"
 #define DEFAULT_FILE_PATH "~/linux4sem/osisp/lab2/envlist.txt"
 #define MAX_ENV_VAR_NAME 30 
-
-//getenv() with a check 
-char* get_var_from_getenv(char* var_name){
-    char* var_value = getenv(var_name);
-
-    if(var_value==NULL){
-        printf("ur env var is fucked up\n");
-        return NULL;
-    }
-    return var_value; 
-}
-
 
 int main(int argc, char* argv[], char* envp[]){
     if(argc < 2){
