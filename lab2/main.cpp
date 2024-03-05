@@ -15,7 +15,6 @@
 #define CHILD_NAME "child"
 #define NAME_SIZE 10
 
-
 //EXTRACT value FROM name=value
 char* get_path_from_var(char* a){
     if(strlen(a) < CHILD_PATH_VAR_NAME){
@@ -77,7 +76,6 @@ char* get_path_from_getenv(){
 
 
 int main(int argc, char **argv, char **envp){
-
     pid_t pid;
     int flag = 0;
     char get;
@@ -142,7 +140,7 @@ int main(int argc, char **argv, char **envp){
                            name[5] = '0' + counter / 10;
                            name[6] = '0' + counter % 10;
                            argv[0] = name;            
-
+                        
                            flag = execve(child_path, argv, envp);
                            if(flag == -1){
                                printf("execve error\n");
