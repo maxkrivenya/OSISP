@@ -1,4 +1,7 @@
 #include "lab2.h"
+#include <errno.h>
+#include <cerrno>
+#include <cstdlib>
 #define CHILD_PATH "CHILD_PATH"
 #define CHILD_PATH_VAR_NAME 10
 #define CHILD_NAME "child"
@@ -9,7 +12,24 @@ int main(int argc, char **argv, char **envp){
     int flag = 0;
     char get;
     int counter = 0;
+    char** argv2 = (char**)calloc(4,sizeof(char*));
+    if(argv2==NULL){
+        (void)printf("calloc error. exiting\n");
+        (void)exit(0);
+    }
+    argv2[3] = NULL;
+ 
+    argv2[1] = (char*)calloc(2,sizeof(char)); 
+    if(argv2[1]==NULL){ 
+            (void)printf("calloc error. exiting\n"); 
+            (void)exit(0);
+    }
 
+    argv2[2] = (char*)calloc(POSIX_PATH_MAX,sizeof(char)); 
+    if(argv2[2]==NULL){ 
+            (void)printf("calloc error. exiting\n"); 
+            (void)exit(0);
+    }
     if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
         perror("signal");
         exit(EXIT_FAILURE);
@@ -28,7 +48,7 @@ int main(int argc, char **argv, char **envp){
             free(name);
             exit(EXIT_SUCCESS);
         }
-
+        argv2[1][0] = get;
         pid = fork();
 
         switch (pid) {
@@ -68,11 +88,10 @@ int main(int argc, char **argv, char **envp){
                            //update process name 
                            name[5] = '0' + counter / 10;
                            name[6] = '0' + counter % 10;
-                           argv[0] = name;            
-                        
-                           flag = execve(child_path, argv, envp);
+                           argv2[0] = name;   
+                           flag = execve(child_path, argv2, envp);
                            if(flag == -1){
-                               printf("execve error\n");
+                               printf("execve error:%s\n", strerror(errno));
                                exit(EXIT_FAILURE);
                            }
                        }
@@ -89,6 +108,10 @@ int main(int argc, char **argv, char **envp){
                         wait(&flag);
                         if (flag == -1) {
                             perror("waitpid");
+                            free(argv2[3]);
+                            free(argv2[2]);
+                            free(argv2[1]);
+                            free(argv2);
                             free(name);
                             exit(EXIT_FAILURE);
                         }

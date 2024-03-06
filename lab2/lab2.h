@@ -9,7 +9,7 @@
 #include <signal.h>
 #include <stdint.h>
 #include <cstring>
-
+#define POSIX_PATH_MAX 512
 //EXTRACT value FROM name=value
 char* get_path_from_var(char* env, int length_of_name){
     if(env == NULL){
