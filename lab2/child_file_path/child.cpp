@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include "lab2.h"
+#include "./../lab2.h"
 #define DEFAULT_FILE_PATH "~/linux4sem/osisp/lab2/envlist.txt"
 #define MAX_ENV_VAR_NAME 30 
 
@@ -45,10 +45,7 @@ int main(int argc, char* argv[], char* envp[]){
             (void)printf("fgets error. exiting\n");
             (void)exit(0);
         }
-        (void)printf("%s",get_var_from_getenv(str));
-
-
-
+        (void)printf("%s=%s",str,get_path_from_getenv(str));
     }
 
     (void)printf("child exit\n");

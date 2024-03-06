@@ -1,79 +1,8 @@
-#include <bits/fs_fwd.h>
-#include <cstdlib>
-#include <stdio.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
-#include <signal.h>
-#include <stdint.h>
-#include <cstring>
+#include "lab2.h"
 #define CHILD_PATH "CHILD_PATH"
 #define CHILD_PATH_VAR_NAME 10
 #define CHILD_NAME "child"
 #define NAME_SIZE 10
-
-//EXTRACT value FROM name=value
-char* get_path_from_var(char* a){
-    if(strlen(a) < CHILD_PATH_VAR_NAME){
-    printf("too short\n");
-    return NULL;
-    }
-int i = CHILD_PATH_VAR_NAME+1;
-    for(; a[i] != '\0'; i++){
-        a[i-CHILD_PATH_VAR_NAME-1] = a[i];
-    }
-    a[i-CHILD_PATH_VAR_NAME-1] = '\0';
-    return a;
-}
-
-//SEE IF name==CONST in name=value
-int begins(const char *a){
-   int i = 0;
-    for(; i < CHILD_PATH_VAR_NAME && i < strlen(a); i++){
-        if(a[i] != CHILD_PATH[i]){
-            return 0;
-        }
-    }
-    if(a[i]=='=' && i < strlen(a)){
-        return 1;
-    }
-    return 0;
-}
-
-//parse environ until i get something that begins with CONST
-char* get_path_from_environ(){
-    for(int i = 0; environ[i] != NULL; i++){
-        if(begins(environ[i])){
-            return get_path_from_var(environ[i]);
-        }
-    }
-    return NULL;
-}
-
-//parse envp[] until i get something that begins with CONST
-char* get_path_from_env(char* envp[]){
-    for (char **env = envp; *env != 0; env++){
-        if(begins(*env)){
-             return get_path_from_var(*env);
-        }
-    }
-    return NULL;
-}
-
-//getenv() with a check 
-char* get_path_from_getenv(){
-    char* child_path = getenv(CHILD_PATH);
-
-    if(child_path==NULL){
-        printf("ur env var is fucked up\n");
-        return NULL;
-    }
-    return child_path; 
-}
-
 
 int main(int argc, char **argv, char **envp){
     pid_t pid;
@@ -114,17 +43,17 @@ int main(int argc, char **argv, char **envp){
                        char* child_path = NULL;
                        switch (get) {
                            case '+':{
-                                        child_path = get_path_from_getenv();
+                                        child_path = get_path_from_getenv(CHILD_PATH);
                                         printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '&':{
-                                        child_path = get_path_from_env(envp);
+                                        child_path = get_path_from_env(envp, CHILD_PATH);
                                         printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '*':{
-                                        child_path = get_path_from_environ();
+                                        child_path = get_path_from_environ(CHILD_PATH);
                                         printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }

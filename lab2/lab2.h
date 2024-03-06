@@ -21,7 +21,7 @@ char* get_path_from_var(char* env, int length_of_name){
         env[i-length_of_name-1] = env[i];
     }
     env[i-length_of_name-1] = '\0';
-    return a;
+    return env;
 }
 
 //SEE IF name==CONST in name=value
@@ -40,7 +40,7 @@ int begins(char *env, char* name){
             return 0;
         }
     }
-    if(env[i]=='=' && i < strlen(env){ //maybe remove strlen env?
+    if(env[i]=='=' && i < strlen(env)){ //maybe remove strlen env?
         return 1;
     }
     return 0;
@@ -50,7 +50,7 @@ int begins(char *env, char* name){
 char* get_path_from_environ(char* name){
     for(int i = 0; environ[i] != NULL; i++){
         if(begins(environ[i], name)){
-            return get_path_from_var(environ[i]);
+            return get_path_from_var(environ[i], strlen(name));
         }
     }
     return NULL;
@@ -60,7 +60,7 @@ char* get_path_from_environ(char* name){
 char* get_path_from_env(char* envp[], char* name){
     for (char **env = envp; *env != 0; env++){
         if(begins(*env, name)){
-             return get_path_from_var(*env);
+             return get_path_from_var(*env, strlen(name));
         }
     }
     return NULL;
