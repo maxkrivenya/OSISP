@@ -1,13 +1,13 @@
 #include "lab2.h"
 #include <errno.h>
-#include <cerrno>
-#include <cstdlib>
-#define CHILD_PATH "CHILD_PATH"
+#include <string.h>
+#define DEFAULT_PATH "child_file_path/child"
 #define CHILD_PATH_VAR_NAME 10
 #define CHILD_NAME "child"
 #define NAME_SIZE 10
 
-int main(int argc, char **argv, char **envp){
+int main(int argc, char *argv[], char *envp[]){
+  //  setenv(CHILD_PATH, DEFAULT_PATH, 1);
     pid_t pid;
     int flag = 0;
     char get;
@@ -63,17 +63,17 @@ int main(int argc, char **argv, char **envp){
                        char* child_path = NULL;
                        switch (get) {
                            case '+':{
-                                        child_path = get_path_from_getenv(CHILD_PATH);
+                                        child_path = get_path_from_getenv("CHILD_PATH");
                                         printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '&':{
-                                        child_path = get_path_from_env(envp, CHILD_PATH);
+                                        child_path = get_path_from_env(envp, "CHILD_PATH");
                                         printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '*':{
-                                        child_path = get_path_from_environ(CHILD_PATH);
+                                        child_path = get_path_from_environ("CHILD_PATH");
                                         printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
@@ -99,7 +99,7 @@ int main(int argc, char **argv, char **envp){
                            printf("exiting\n");
                            exit(1);
                        }
-
+                        break;
                    }
 
             default:{       //for parent

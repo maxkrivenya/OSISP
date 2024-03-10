@@ -1,4 +1,3 @@
-#include <cstdlib>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -8,9 +7,12 @@
 #include <unistd.h>
 #include <signal.h>
 #include <stdint.h>
-#include <cstring>
+#include <string.h>
+#include <errno.h>
 #define POSIX_PATH_MAX 512
-//EXTRACT value FROM name=value
+extern char** environ;
+
+
 char* get_path_from_var(char* env, int length_of_name){
     if(env == NULL){
     printf("NULL received\n");
@@ -25,29 +27,29 @@ char* get_path_from_var(char* env, int length_of_name){
 }
 
 //SEE IF name==CONST in name=value
-int begins(char *env, char* name){
+int begins(char *env, const char* name){
    if(env == NULL){
     printf("env==null\n");
     return -1;
    }
-      if(name == NULL){
+    if(name == NULL){
     printf("name==null\n");
     return -1;
    }
-   int i = 0;
+   size_t i = 0;
     for(; i < strlen(name) && i < strlen(name); i++){
         if(env[i] != name[i]){
             return 0;
         }
     }
-    if(env[i]=='=' && i < strlen(env)){ //maybe remove strlen env?
+    if(env[i]=='='){ //maybe remove strlen env?
         return 1;
     }
     return 0;
 }
 
 //parse environ until i get something that begins with name
-char* get_path_from_environ(char* name){
+char* get_path_from_environ(const char* name){
     for(int i = 0; environ[i] != NULL; i++){
         if(begins(environ[i], name)){
             return get_path_from_var(environ[i], strlen(name));
@@ -57,7 +59,7 @@ char* get_path_from_environ(char* name){
 }
 
 //parse envp[] until i get something that begins with name
-char* get_path_from_env(char* envp[], char* name){
+char* get_path_from_env(char* envp[], const char* name){
     for (char **env = envp; *env != 0; env++){
         if(begins(*env, name)){
              return get_path_from_var(*env, strlen(name));
@@ -67,7 +69,7 @@ char* get_path_from_env(char* envp[], char* name){
 }
 
 //getenv() with a check 
-char* get_path_from_getenv(char* name){
+char* get_path_from_getenv(const char* name){
     char* var_value = getenv(name);
     if(var_value==NULL){
         printf("ur env var is fucked up\n");
