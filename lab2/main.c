@@ -7,7 +7,7 @@
 #define NAME_SIZE 10
 
 int main(int argc, char *argv[], char *envp[]){
-  //  setenv(CHILD_PATH, DEFAULT_PATH, 1);
+    //  setenv(CHILD_PATH, DEFAULT_PATH, 1);
     pid_t pid;
     int flag = 0;
     char get;
@@ -18,44 +18,44 @@ int main(int argc, char *argv[], char *envp[]){
         (void)exit(0);
     }
     argv2[3] = NULL;
- 
+
     argv2[1] = (char*)calloc(2,sizeof(char)); 
     if(argv2[1]==NULL){ 
-            (void)printf("calloc error. exiting\n"); 
-            (void)exit(0);
+        (void)printf("calloc error. exiting\n"); 
+        (void)exit(0);
     }
 
     argv2[2] = (char*)calloc(POSIX_PATH_MAX,sizeof(char)); 
     if(argv2[2]==NULL){ 
-            (void)printf("calloc error. exiting\n"); 
-            (void)exit(0);
+        (void)printf("calloc error. exiting\n"); 
+        (void)exit(0);
     }
     if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
-        perror("signal");
-        exit(EXIT_FAILURE);
+        (void)perror("signal");
+        (void)exit(EXIT_FAILURE);
     }
 
     char* name = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
     (void)strcat(name,  CHILD_NAME);
 
     do{
-        fflush(stdin);
+        (void)fflush(stdin);
         get = getc(stdin);  //read command symbol
-        getc(stdin);        //remove \n from stdin
-        
+        (void)getc(stdin);        //remove \n from stdin
+
         if(get == 'q'){             //exit on command     
-            puts("parent exit");
-            free(name);
-            exit(EXIT_SUCCESS);
+            (void)puts("parent exit");
+            (void)free(name);
+            (void)exit(EXIT_SUCCESS);
         }
         argv2[1][0] = get;
         pid = fork();
 
         switch (pid) {
             case -1:{                           //fork failed
-                        perror("fork");
-                        free(name);
-                        exit(EXIT_FAILURE);
+                        (void)perror("fork");
+                        (void)free(name);
+                        (void)exit(EXIT_FAILURE);
 
                     }
 
@@ -64,26 +64,26 @@ int main(int argc, char *argv[], char *envp[]){
                        switch (get) {
                            case '+':{
                                         child_path = get_path_from_getenv("CHILD_PATH");
-                                        printf("CHILD_PATH=%s\n", child_path);
+                                        (void)printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '&':{
                                         child_path = get_path_from_env(envp, "CHILD_PATH");
-                                        printf("CHILD_PATH=%s\n", child_path);
+                                        (void)printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '*':{
                                         child_path = get_path_from_environ("CHILD_PATH");
-                                        printf("CHILD_PATH=%s\n", child_path);
+                                        (void)printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            default:{
-                                       printf("unrecognised symbol\n");
+                                       (void)printf("unrecognised symbol\n");
                                        break;
                                    }
                        }
-                       
-                        
+
+
                        if(get == '+' || get == '&' || get == '*'){
                            //update process name 
                            name[5] = '0' + counter / 10;
@@ -91,29 +91,29 @@ int main(int argc, char *argv[], char *envp[]){
                            argv2[0] = name;   
                            flag = execve(child_path, argv2, envp);
                            if(flag == -1){
-                               printf("execve error:%s\n", strerror(errno));
-                               exit(EXIT_FAILURE);
+                               (void)printf("execve error:%s\n", strerror(errno));
+                               (void)exit(EXIT_FAILURE);
                            }
                        }
                        else{
-                           printf("exiting\n");
-                           exit(1);
+                           (void)printf("exiting\n");
+                           (void)exit(1);
                        }
-                        break;
+                       break;
                    }
 
             default:{       //for parent
                         counter++;
-                        printf("child : %jd\n", (intmax_t) pid);
-                        wait(&flag);
+                        (void)printf("child : %jd\n", (intmax_t) pid);
+                        (void)wait(&flag);
                         if (flag == -1) {
-                            perror("waitpid");
-                            free(argv2[3]);
-                            free(argv2[2]);
-                            free(argv2[1]);
-                            free(argv2);
-                            free(name);
-                            exit(EXIT_FAILURE);
+                            (void)perror("waitpid");
+                            (void)free(argv2[3]);
+                            (void)free(argv2[2]);
+                            (void)free(argv2[1]);
+                            (void)free(argv2);
+                            (void)free(name);
+                            (void)exit(EXIT_FAILURE);
                         }
                     }
         }

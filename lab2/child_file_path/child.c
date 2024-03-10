@@ -10,6 +10,7 @@
 #define MAX_ENV_VAR_NAME 30 
 
 int main(int argc, char* argv[], char* envp[]){
+    (void)system("CLS");
     if(argc < 2){
         (void)printf("not enough parameters: argc='%d'. exiting\n", argc);
         (void)exit(0);
