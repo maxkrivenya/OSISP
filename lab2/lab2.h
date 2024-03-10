@@ -13,7 +13,15 @@
 extern char** environ;
 
 
-char* get_path_from_var(char* env, int length_of_name){
+int comp( void const * lhs, void const * rhs )
+{
+    char const * l = *(char const **)lhs;
+    char const * r = *(char const **)rhs;
+    return strcmp( l, r );
+}
+
+char* get_path_from_var(char* env, int length_of_name)
+{
     if(env == NULL){
     printf("NULL received\n");
     return NULL;
@@ -27,7 +35,8 @@ char* get_path_from_var(char* env, int length_of_name){
 }
 
 //SEE IF name==CONST in name=value
-int begins(char *env, const char* name){
+int begins(char *env, const char* name)
+{
    if(env == NULL){
     printf("env==null\n");
     return -1;
@@ -49,7 +58,8 @@ int begins(char *env, const char* name){
 }
 
 //parse environ until i get something that begins with name
-char* get_path_from_environ(const char* name){
+char* get_path_from_environ(const char* name)
+{
     for(int i = 0; environ[i] != NULL; i++){
         if(begins(environ[i], name)){
             return get_path_from_var(environ[i], strlen(name));
@@ -59,7 +69,8 @@ char* get_path_from_environ(const char* name){
 }
 
 //parse envp[] until i get something that begins with name
-char* get_path_from_env(char* envp[], const char* name){
+char* get_path_from_env(char* envp[], const char* name)
+{
     for (char **env = envp; *env != 0; env++){
         if(begins(*env, name)){
              return get_path_from_var(*env, strlen(name));
@@ -69,7 +80,8 @@ char* get_path_from_env(char* envp[], const char* name){
 }
 
 //getenv() with a check 
-char* get_path_from_getenv(const char* name){
+char* get_path_from_getenv(const char* name)
+{
     char* var_value = getenv(name);
     if(var_value==NULL){
         printf("ur env var is fucked up\n");

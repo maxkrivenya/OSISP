@@ -7,11 +7,26 @@
 #define NAME_SIZE 10
 
 int main(int argc, char *argv[], char *envp[]){
-    //  setenv(CHILD_PATH, DEFAULT_PATH, 1);
+
+    size_t count = 0;
+    while ( environ[count] != 0 )
+    {
+        ++count;
+    }
+    char ** my_environ = malloc( sizeof( char * ) * count );
+    memcpy( my_environ, environ, sizeof( char * ) * count );
+    qsort( my_environ, count, sizeof( char * ), comp );
+    for ( size_t i = 0; i < count; ++i )
+    {
+        puts( my_environ[i] );
+    }
+    printf("end of environ\n\n");
+    
     pid_t pid;
     int flag = 0;
     char get;
     int counter = 0;
+
     char** argv2 = (char**)calloc(4,sizeof(char*));
     if(argv2==NULL){
         (void)printf("calloc error. exiting\n");
