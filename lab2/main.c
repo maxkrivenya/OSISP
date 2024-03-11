@@ -8,14 +8,18 @@
 
 int main(int argc, char *argv[], char *envp[]){
 
+    //getting environ size
     size_t count = 0;
     while ( environ[count] != 0 )
     {
         ++count;
     }
+    //copying environ to my_environ
     char ** my_environ = malloc( sizeof( char * ) * count );
     memcpy( my_environ, environ, sizeof( char * ) * count );
+    //sorting my_environ
     qsort( my_environ, count, sizeof( char * ), comp );
+    //printing out sorted environ
     for ( size_t i = 0; i < count; ++i )
     {
         puts( my_environ[i] );
@@ -27,24 +31,19 @@ int main(int argc, char *argv[], char *envp[]){
     char get;
     int counter = 0;
 
-    char** argv2 = (char**)calloc(4,sizeof(char*));
-    if(argv2==NULL){
-        (void)printf("calloc error. exiting\n");
-        (void)exit(0);
-    }
-    argv2[3] = NULL;
-
+    //argv for child
+    char* argv2[3];
     argv2[1] = (char*)calloc(2,sizeof(char)); 
     if(argv2[1]==NULL){ 
         (void)printf("calloc error. exiting\n"); 
         (void)exit(0);
     }
-
     argv2[2] = (char*)calloc(POSIX_PATH_MAX,sizeof(char)); 
     if(argv2[2]==NULL){ 
         (void)printf("calloc error. exiting\n"); 
         (void)exit(0);
     }
+
     if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
         (void)perror("signal");
         (void)exit(EXIT_FAILURE);
@@ -60,10 +59,16 @@ int main(int argc, char *argv[], char *envp[]){
 
         if(get == 'q'){             //exit on command     
             (void)puts("parent exit");
+            (void)free(argv2[2]);
+            (void)free(argv2[1]);
             (void)free(name);
             (void)exit(EXIT_SUCCESS);
         }
+    
+        //putting command into child argv
         argv2[1][0] = get;
+
+        //forking
         pid = fork();
 
         switch (pid) {
@@ -123,10 +128,8 @@ int main(int argc, char *argv[], char *envp[]){
                         (void)wait(&flag);
                         if (flag == -1) {
                             (void)perror("waitpid");
-                            (void)free(argv2[3]);
                             (void)free(argv2[2]);
                             (void)free(argv2[1]);
-                            (void)free(argv2);
                             (void)free(name);
                             (void)exit(EXIT_FAILURE);
                         }
