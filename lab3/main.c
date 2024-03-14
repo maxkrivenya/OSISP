@@ -1,8 +1,7 @@
 
 #include <errno.h>
 #include <string.h>
-#define DEFAULT_PATH "child_file_path/child"
-#define CHILD_PATH_VAR_NAME 10
+#define CHILD_PATH "./child"
 #define CHILD_NAME "child"
 #define NAME_SIZE 10
 
@@ -26,10 +25,11 @@ int main(int argc, char *argv[], char *envp[]){
         (void)perror("signal");
         (void)exit(EXIT_FAILURE);
     }
-    
-    //getting environ size
-    size_t count = 0;
-    
+
+    char str[50] = "ps -o pid --ppid ";
+    char ppid [7];
+    sprintf(ppid,"%d",getpid());
+    strcat(str,ppid);
     pid_t pid;
     int flag = 0;
     char get;
@@ -44,73 +44,60 @@ int main(int argc, char *argv[], char *envp[]){
         get = getc(stdin);  //read command symbol
         (void)getc(stdin);        //remove \n from stdin
 
-        if(get == 'q'){             //exit on command     
-            (void)puts("parent exit");
-            (void)exit(EXIT_SUCCESS);
-        }
-    
-        //forking
-        pid = fork();
+        switch(get){
+            case 'q':{
+                         free(name);
+                         (void)puts("parent exit");
+                         (void)exit(EXIT_SUCCESS);
+                         break;
+                     }
+            case 'l':{
+                         system(str);
+                         break;
+                     }
 
-        switch (pid) {
-            case -1:{                           //fork failed
-                        (void)perror("fork");
-                        (void)free(name);
-                        (void)exit(EXIT_FAILURE);
+            default:{
+                        //forking
+                        pid = fork();
 
-                    }
+                        switch (pid) {
+                            case -1:{                           //fork failed
+                                        (void)perror("fork");
+                                        (void)free(name);
+                                        (void)exit(EXIT_FAILURE);
 
-            case 0:{                            //for forked
-                       char* child_path = NULL;
-                       switch (get) {
-                           case '+':{
-                                        (void)printf("CHILD_PATH=%s\n", child_path);
-                                        break;
                                     }
-                           case '&':{
-                                        (void)printf("CHILD_PATH=%s\n", child_path);
-                                        break;
-                                    }
-                           case '*':{
-                                        (void)printf("CHILD_PATH=%s\n", child_path);
-                                        break;
-                                    }
-                           default:{
-                                       (void)printf("unrecognised symbol\n");
+
+                            case 0:{                            //for forked
+                                                                //update process name
+                                       name[5] = '0' + counter / 10;
+                                       name[6] = '0' + counter % 10;
+                                       argv[0] = name;
+                                       flag = execve(CHILD_PATH, argv, envp);
+                                       if(flag == -1){
+                                           (void)printf("execve error:%s\n", strerror(errno));
+                                           (void)exit(EXIT_FAILURE);
+                                       }
+                                       exit(1);
                                        break;
                                    }
-                       }
 
-
-                       if(get == '+' || get == '&' || get == '*'){
-                           //update process name 
-                           name[5] = '0' + counter / 10;
-                           name[6] = '0' + counter % 10;
-                           flag = execve(child_path, argv, envp);
-                           if(flag == -1){
-                               (void)printf("execve error:%s\n", strerror(errno));
-                               (void)exit(EXIT_FAILURE);
-                           }
-                       }
-                       else{
-                           (void)printf("exiting\n");
-                           (void)exit(1);
-                       }
-                       break;
-                   }
-
-            default:{       //for parent
-                        counter++;
-                        (void)printf("child : %jd\n", (intmax_t) pid);
-                        (void)wait(&flag);
-                        if (flag == -1) {
-                            (void)perror("waitpid");
-                            (void)free(name);
-                            (void)exit(EXIT_FAILURE);
+                            default:{       //for parent
+                                        counter++;
+                                        (void)printf("child : %jd\n", (intmax_t) pid);
+                                        (void)wait(&flag);
+                                        if (flag == -1) {
+                                            (void)perror("waitpid");
+                                            (void)free(name);
+                                            (void)exit(EXIT_FAILURE);
+                                        }
+                                        break;
+                                    }      
                         }
                     }
-        }
-    }while(get != 'q');
+        } 
 
+    }while(get != 'q');
+    exit(1);
     return 0;
 }

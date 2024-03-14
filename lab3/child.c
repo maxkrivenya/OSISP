@@ -10,7 +10,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int main(){
+int main(int argc, char* argv[], char* envp[]){
     struct combination{
         int zero;
         int one;
@@ -57,8 +57,8 @@ int main(){
                         char buffer = 'b';
                         while(buffer != 'a'){   //while child doesnt wake up
                             read(pipefd[0],&buffer,1);
-                            result_t.tv_sec  = rand()%2;    //random struct
-                            result_t.tv_nsec = rand()%2;
+                            result_t.tv_sec  = rand()&1;    //random struct
+                            result_t.tv_nsec = rand()&1;
                         }
 
                         if(result_t.tv_sec==0){         //when child woke up, statistics
@@ -80,13 +80,14 @@ int main(){
                     }
         }   // switch
     }   // i = 0 to 101
-    printf("\npid:%d\nppid:%d\n\t00:%d\n\t01:%d\n\t10:%d\n\t11:%d\nend\n",
+    printf("\nname:%s\npid:%d\nppid:%d\n\t00:%d\n\t01:%d\n\t10:%d\n\t11:%d\nend\n",
+            argv[0],
             getpid(),
             getppid(),
             combination_t.zero,
             combination_t.one,
             combination_t.ten,
-            combination_t.eleven);  //after loop send statistics
+            combination_t.eleven);
     exit(1);
     return 0;
 }
