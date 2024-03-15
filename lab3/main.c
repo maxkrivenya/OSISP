@@ -39,8 +39,8 @@ int main(int argc, char *argv[], char *envp[]){
 
     (void)strcat(name,  CHILD_NAME);
 
+    (void)fflush(stdin);
     do{
-        (void)fflush(stdin);
         get = getc(stdin);  //read command symbol
         (void)getc(stdin);        //remove \n from stdin
 
@@ -48,7 +48,7 @@ int main(int argc, char *argv[], char *envp[]){
             case 'q':{
                          free(name);
                          (void)puts("parent exit");
-                         (void)exit(EXIT_SUCCESS);
+                         (void)exit(1);
                          break;
                      }
             case 'l':{
@@ -97,7 +97,7 @@ int main(int argc, char *argv[], char *envp[]){
                     }
         } 
 
-    }while(get != 'q');
+    }while(1);
     exit(1);
     return 0;
 }
