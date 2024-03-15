@@ -17,10 +17,11 @@
 #include <string.h>
 #include <errno.h>
 #define POSIX_PATH_MAX 512
-extern char** environ;
+int kill(pid_t pid, int sig);
+
 
 int main(int argc, char *argv[], char *envp[]){
-
+    if(argc < 1){return -1;}
     if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
         (void)perror("signal");
         (void)exit(EXIT_FAILURE);
@@ -35,7 +36,6 @@ int main(int argc, char *argv[], char *envp[]){
     pid_t pid;
     int flag = 0;
     char get;
-    char bufclear;
     int counter = 0;
 
     char* name = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
@@ -45,36 +45,64 @@ int main(int argc, char *argv[], char *envp[]){
     (void)fflush(stdin);
     do{ 
         get = getc(stdin);  //read command symbol
-        bufclear = getc(stdin);        //remove \n from stdin
-        if(bufclear != '\n'){
-            get = bufclear;
-        }
+        // bufclear = getc(stdin);        //remove \n from stdin
+       // if(bufclear != '\n'){
+       //     get = bufclear;
+       // }
 
         switch(get){
+            case '\n':{
+                          break;
+                      }
             case 'q':{
-                         free(name);
+                         (void)free(name);
                          (void)puts("parent exit");
-                         kill(0,SIGINT);
+                         flag = kill(0,SIGINT);
+                         if(flag==-1){
+                             perror("kill");
+                             exit(-1);
+                         }
                          (void)exit(1);
                          break;
                      }
             case 'l':{
-                         system(list);
+                         (void)system(list);
                          break;
                      }
             case 'k':{
                          (void)puts("killing everyone...\n");
-                         system(kill_children);
+                         (void)system(kill_children);
                          (void)puts("everyone is dead.\n");
                          break;
                      }
             case '-':{
-                         kill(pid,SIGINT);
+                         flag = kill(pid,SIGINT);
+                         if(flag==-1){
+                             perror("kill");
+                             exit(-1);
+                         }
                          break;
                      }
+            case 'g':{
+                         flag = kill(0,SIGUSR1);
+                         if(flag==-1){
+                             perror("kill");
+                             exit(-1);
+                         }
+                         break;
+                     }
+            case 's':{
+                         flag = kill(0,SIGUSR2);
+                         if(flag==-1){
+                             perror("kill");
+                             exit(-1);
+                         }
+                         break;
+                     }
+
             default:{
                         if(counter > 99){
-                            printf("cant create more children\n");
+                            (void)printf("cant create more children\n");
                             break;
                         }
 

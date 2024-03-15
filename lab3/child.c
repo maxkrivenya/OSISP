@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <time.h>
+#include <sys/time.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
@@ -10,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
+int nanosleep(const struct timespec *req, struct timespec *rem);
 
 struct combination{
         int zero;
@@ -26,18 +28,28 @@ void sig1_handler(){
         printf("allowed\n");
 }
 
+void sig2_handler(){
+        signal(SIGUSR2, sig2_handler);
+        print_allowed = 0;
+        printf("not allowed\n");
+}
 
 
-int main(int argc, char* argv[], char* envp[]){
+
+//huh?"
+int main(int argc, char* argv[]){
+    if(argc < 1){return -1;}
+    signal(SIGUSR1,sig1_handler);
+    signal(SIGUSR2,sig2_handler);
     struct combination combination_t = {0,0,0,0};
 
     struct timespec first_t = {5,5000000};
     struct timespec second_t = {5,50};
     struct timespec result_t = {0,0};
     pid_t pid;
+    int flag = 0;
 
-
-    for(int i = 0; i < 101; i++){
+    for(;;){
 
         int   pipefd[2];            // pipe for process communication,
         if (pipe(pipefd) == -1) {   // [0] = read, [1] = write
@@ -56,16 +68,25 @@ int main(int argc, char* argv[], char* envp[]){
 
             case 0:{   //for child
                        close(pipefd[0]);    // close read end of pipe
+                                            //
                        char message = 'a';
-                       nanosleep(&first_t,&second_t);   //sleep
+                       flag = nanosleep(&first_t,&second_t);   //sleep
+                       if(flag==-1){
+                           perror("nanosleep");
+                           exit(-1);
+                       }
                        write(pipefd[1], &message, sizeof(char)); //wake up, write message to parent
+                       
                        close(pipefd[1]);    // close write end of pipe
+                       
                        exit(1);
+                       
                        break;
                    }
 
             default:{       //for parent
                         close(pipefd[1]); //close write end of pipe
+                        
                         char buffer = 'b';
                         while(buffer != 'a'){   //while child doesnt wake up
                             read(pipefd[0],&buffer,1);
@@ -87,8 +108,9 @@ int main(int argc, char* argv[], char* envp[]){
                                 combination_t.eleven++;
                             }
                         }
+                        
                         close(pipefd[0]);       //close read end of pipe'
-                        signal(SIGUSR1,sig1_handler);
+                        
                         if(print_allowed){
                             printf("%s %d %d 00:%d 01:%d 10:%d 11:%d\n",
                                     argv[0],
@@ -99,8 +121,6 @@ int main(int argc, char* argv[], char* envp[]){
                                     combination_t.ten,
                                     combination_t.eleven)
                                 ;
-                            print_allowed = 0;
-
                         }
                         break;
                     }   // switch
