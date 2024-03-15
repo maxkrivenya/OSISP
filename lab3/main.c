@@ -26,11 +26,11 @@ int main(int argc, char *argv[], char *envp[]){
         (void)exit(EXIT_FAILURE);
     }
 
-    char str[50] = "ps -o pid --ppid ";
+    char list[50] = "ps -o pid --ppid ";
     char kill_children[20] = "pkill -P ";
     char ppid [7];
     sprintf(ppid,"%d",getpid());
-    strcat(str,ppid);
+    strcat(list,ppid);
     strcat(kill_children, ppid);
     pid_t pid;
     int flag = 0;
@@ -59,7 +59,7 @@ int main(int argc, char *argv[], char *envp[]){
                          break;
                      }
             case 'l':{
-                         system(str);
+                         system(list);
                          break;
                      }
             case 'k':{
@@ -81,9 +81,6 @@ int main(int argc, char *argv[], char *envp[]){
                                     }
 
                             case 0:{                            //for forked
-                                       if(-1==setsid()){
-                                           return -1;
-                                       }
                                        //update process name
                                        name[5] = '0' + counter / 10;
                                        name[6] = '0' + counter % 10;
