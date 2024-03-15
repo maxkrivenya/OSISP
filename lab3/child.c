@@ -19,8 +19,8 @@ int main(int argc, char* argv[], char* envp[]){
     };
     struct combination combination_t = {0,0,0,0};
 
-    struct timespec first_t = {0,5000000};
-    struct timespec second_t = {0,50};
+    struct timespec first_t = {5,5000000};
+    struct timespec second_t = {5,50};
     struct timespec result_t = {0,0};
     pid_t pid;
 
@@ -34,7 +34,7 @@ int main(int argc, char* argv[], char* envp[]){
         }
 
         pid = fork();       // child - sleep, parent - struct randomizer
-        
+
         switch (pid) {
             case -1:{                           //fork failed
                         (void)perror("fork");
@@ -75,19 +75,19 @@ int main(int argc, char* argv[], char* envp[]){
                                 combination_t.eleven++;
                             }
                         }
-                        close(pipefd[0]);       //close read end of pipe
+                        close(pipefd[0]);       //close read end of pipe'
+                        printf("%s %d %d 00:%d 01:%d 10:%d 11:%d\n",
+                                argv[0],
+                                getpid(),
+                                getppid(),
+                                combination_t.zero,
+                                combination_t.one,
+                                combination_t.ten,
+                                combination_t.eleven);
                         break;
                     }
         }   // switch
     }   // i = 0 to 101
-    printf("\nname:%s\npid:%d\nppid:%d\n\t00:%d\n\t01:%d\n\t10:%d\n\t11:%d\nend\n",
-            argv[0],
-            getpid(),
-            getppid(),
-            combination_t.zero,
-            combination_t.one,
-            combination_t.ten,
-            combination_t.eleven);
     exit(1);
     return 0;
 }

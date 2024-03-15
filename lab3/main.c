@@ -27,12 +27,15 @@ int main(int argc, char *argv[], char *envp[]){
     }
 
     char str[50] = "ps -o pid --ppid ";
+    char kill_children[20] = "pkill -P ";
     char ppid [7];
     sprintf(ppid,"%d",getpid());
     strcat(str,ppid);
+    strcat(kill_children, ppid);
     pid_t pid;
     int flag = 0;
     char get;
+    char bufclear;
     int counter = 0;
 
     char* name = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
@@ -40,14 +43,18 @@ int main(int argc, char *argv[], char *envp[]){
     (void)strcat(name,  CHILD_NAME);
 
     (void)fflush(stdin);
-    do{
+    do{ 
         get = getc(stdin);  //read command symbol
-        (void)getc(stdin);        //remove \n from stdin
+        bufclear = getc(stdin);        //remove \n from stdin
+        if(bufclear != '\n'){
+            get = bufclear;
+        }
 
         switch(get){
             case 'q':{
                          free(name);
                          (void)puts("parent exit");
+                         kill(0,SIGINT);
                          (void)exit(1);
                          break;
                      }
@@ -55,7 +62,12 @@ int main(int argc, char *argv[], char *envp[]){
                          system(str);
                          break;
                      }
-
+            case 'k':{
+                         (void)puts("killing everyone...\n");
+                         system(kill_children);
+                         (void)puts("everyone is dead.\n");
+                         break;
+                     }
             default:{
                         //forking
                         pid = fork();
@@ -69,7 +81,10 @@ int main(int argc, char *argv[], char *envp[]){
                                     }
 
                             case 0:{                            //for forked
-                                                                //update process name
+                                       if(-1==setsid()){
+                                           return -1;
+                                       }
+                                       //update process name
                                        name[5] = '0' + counter / 10;
                                        name[6] = '0' + counter % 10;
                                        argv[0] = name;
@@ -85,12 +100,13 @@ int main(int argc, char *argv[], char *envp[]){
                             default:{       //for parent
                                         counter++;
                                         (void)printf("child : %jd\n", (intmax_t) pid);
-                                        (void)wait(&flag);
+                                      /*  (void)wait(&flag);
                                         if (flag == -1) {
                                             (void)perror("waitpid");
                                             (void)free(name);
                                             (void)exit(EXIT_FAILURE);
                                         }
+                                        */
                                         break;
                                     }      
                         }
@@ -98,6 +114,5 @@ int main(int argc, char *argv[], char *envp[]){
         } 
 
     }while(1);
-    exit(1);
     return 0;
 }
