@@ -2,6 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <dirent.h>
@@ -10,13 +11,24 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int main(int argc, char* argv[], char* envp[]){
-    struct combination{
+struct combination{
         int zero;
         int one;
         int ten;
         int eleven;
-    };
+};
+
+volatile int print_allowed = 0;
+
+void sig1_handler(){
+        signal(SIGUSR1, sig1_handler);
+        print_allowed = 1;
+        printf("allowed\n");
+}
+
+
+
+int main(int argc, char* argv[], char* envp[]){
     struct combination combination_t = {0,0,0,0};
 
     struct timespec first_t = {5,5000000};
@@ -76,19 +88,24 @@ int main(int argc, char* argv[], char* envp[]){
                             }
                         }
                         close(pipefd[0]);       //close read end of pipe'
-                        printf("%s %d %d 00:%d 01:%d 10:%d 11:%d\n",
-                                argv[0],
-                                getpid(),
-                                getppid(),
-                                combination_t.zero,
-                                combination_t.one,
-                                combination_t.ten,
-                                combination_t.eleven);
-                        break;
-                    }
-        }   // switch
-    }   // i = 0 to 101
-    exit(1);
-    return 0;
-}
+                        signal(SIGUSR1,sig1_handler);
+                        if(print_allowed){
+                            printf("%s %d %d 00:%d 01:%d 10:%d 11:%d\n",
+                                    argv[0],
+                                    getpid(),
+                                    getppid(),
+                                    combination_t.zero,
+                                    combination_t.one,
+                                    combination_t.ten,
+                                    combination_t.eleven)
+                                ;
+                            print_allowed = 0;
 
+                        }
+                        break;
+                    }   // switch
+        }   // i = 0 to 101
+        exit(1);
+        return 0;
+    }
+}

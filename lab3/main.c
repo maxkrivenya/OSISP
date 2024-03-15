@@ -68,7 +68,16 @@ int main(int argc, char *argv[], char *envp[]){
                          (void)puts("everyone is dead.\n");
                          break;
                      }
+            case '-':{
+                         kill(pid,SIGINT);
+                         break;
+                     }
             default:{
+                        if(counter > 99){
+                            printf("cant create more children\n");
+                            break;
+                        }
+
                         //forking
                         pid = fork();
 
