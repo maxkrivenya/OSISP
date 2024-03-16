@@ -24,16 +24,16 @@ int main(int argc, char *argv[], char *envp[]){
     char* get   = (char*)calloc(COMMAND_LENGTH,1); //init g<K> string
     char* name  = (char*)calloc(CHILD_NAME_SIZE,1); //init "CHILD%d%d" string
     if(get==NULL){
-        perror("malloc");
+        printf("%s\n",strerror(errno));
         exit(-1);
     } 
     if(name==NULL){
-        perror("malloc");
+        printf("%s\n",strerror(errno));
         exit(-1);
     }
     (void)strcpy(name,  CHILD_NAME);
     if(name==NULL){
-        perror("strcpy");
+        printf("%s\n",strerror(errno));
         exit(-1);
     }
 
@@ -62,7 +62,7 @@ int main(int argc, char *argv[], char *envp[]){
                          (void)puts("parent exit");
                          flag = kill(0,SIGINT);
                          if(flag==-1){
-                             perror("kill");
+                             printf("%s\n",strerror(errno));
                              exit(-1);
                          }
                          (void)exit(1);
@@ -124,7 +124,7 @@ int main(int argc, char *argv[], char *envp[]){
                              }
                          }
                          if(flag==-1){
-                             perror("kill");
+                             printf("%s\n",strerror(errno));
                              exit(-1);
                          }
                          break;
@@ -149,7 +149,7 @@ int main(int argc, char *argv[], char *envp[]){
                              }
                          }
                          if(flag==-1){
-                             perror("kill");
+                             printf("%s\n",strerror(errno));
                              exit(-1);
                          }
                          break;
@@ -191,7 +191,7 @@ int main(int argc, char *argv[], char *envp[]){
 
                              switch (pid) {
                                  case -1:{                           //fork failed
-                                             (void)perror("fork");
+                                             printf("%s\n",strerror(errno));
                                              (void)free(name);
                                              (void)exit(EXIT_FAILURE);
 
@@ -247,7 +247,7 @@ int main(int argc, char *argv[], char *envp[]){
                                  break;
                              }
                              if(flag==-1){
-                                 perror("kill");
+                                 printf("%s\n",strerror(errno));
                                  printf("id = '%d', max_pid='%d'\n",max_pid_id,max_pid);
                                  exit(-1);
                              }
