@@ -1,16 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
 #include "./../lab2.h"
 #define DEFAULT_FILE_PATH "/home/myra/linux4sem/osisp/lab2/envlist.txt\0"
 #define MAX_ENV_VAR_NAME 30 
 
 int main(int argc, char* argv[], char* envp[]){
-    (void)system("CLS");
     if(argc < 2){
         (void)printf("not enough parameters: argc='%d'. exiting\n", argc);
         (void)exit(0);
@@ -43,7 +35,7 @@ int main(int argc, char* argv[], char* envp[]){
 
     switch(argv[1][0]){ 
         case '+':{
-                     printf("\tprinting from getenv...\n");
+                     (void)printf("\tprinting from getenv...\n");
                      while(!feof(fptr)){
                          (void)fgets(str, MAX_ENV_VAR_NAME, fptr);
                          if(str==NULL){
@@ -60,7 +52,7 @@ int main(int argc, char* argv[], char* envp[]){
                      break;
                  }
         case '&':{
-                     printf("\tprinting from envp...\n");
+                     (void)printf("\tprinting from envp...\n");
                      while(!feof(fptr)){
                          (void)fgets(str, MAX_ENV_VAR_NAME, fptr);
                          if(str==NULL){
@@ -77,7 +69,7 @@ int main(int argc, char* argv[], char* envp[]){
                      break;
                  }
         case '*':{
-                     printf("\tprinting from environ...\n");
+                     (void)printf("\tprinting from environ...\n");
                      while(!feof(fptr)){
                          (void)fgets(str, MAX_ENV_VAR_NAME, fptr);
                          if(str==NULL){
@@ -94,13 +86,13 @@ int main(int argc, char* argv[], char* envp[]){
                      break;
                  }
         default:{
-                    printf("unexpected symbol.\n");
+                    (void)printf("unexpected symbol.\n");
                     break;
                 }
     }
     flag = fclose(fptr);
     if(flag==EOF){
-        printf("file close error.\n");
+        (void)printf("file close error.\n");
         exit(0);
     }
     (void)printf("child exit\n");

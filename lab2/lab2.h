@@ -23,7 +23,7 @@ int comp( void const * lhs, void const * rhs )
 char* get_path_from_var(char* env, int length_of_name)
 {
     if(env == NULL){
-    printf("NULL received\n");
+    (void)printf("NULL received\n");
     return NULL;
     }
     int i = length_of_name+1;
@@ -38,11 +38,11 @@ char* get_path_from_var(char* env, int length_of_name)
 int begins(char *env, const char* name)
 {
    if(env == NULL){
-    printf("env==null\n");
+    (void)printf("env==null\n");
     return -1;
    }
     if(name == NULL){
-    printf("name==null\n");
+    (void)printf("name==null\n");
     return -1;
    }
    size_t i = 0;
@@ -84,7 +84,7 @@ char* get_path_from_getenv(const char* name)
 {
     char* var_value = getenv(name);
     if(var_value==NULL){
-        printf("ur env var is fucked up\n");
+        (void)printf("ur env var is fucked up\n");
         return NULL;
     }
     return var_value; 

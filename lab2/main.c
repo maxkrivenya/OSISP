@@ -1,13 +1,10 @@
 #include "lab2.h"
-#include <errno.h>
-#include <string.h>
 #define DEFAULT_PATH "child_file_path/child"
 #define CHILD_PATH_VAR_NAME 10
 #define CHILD_NAME "child"
 #define NAME_SIZE 10
 
 int main(int argc, char *argv[], char *envp[]){
-
     //getting environ size
     size_t count = 0;
     while ( environ[count] != 0 )
@@ -16,15 +13,18 @@ int main(int argc, char *argv[], char *envp[]){
     }
     //copying environ to my_environ
     char ** my_environ = malloc( sizeof( char * ) * count );
-    memcpy( my_environ, environ, sizeof( char * ) * count );
+    if(memcpy( my_environ, environ, sizeof( char * ) * count ) == NULL){
+        perror("memcpy");
+        exit(-1);
+    }
     //sorting my_environ
-    qsort( my_environ, count, sizeof( char * ), comp );
+    (void)qsort( my_environ, count, sizeof( char * ), comp );
     //printing out sorted environ
     for ( size_t i = 0; i < count; ++i )
     {
         puts( my_environ[i] );
     }
-    printf("end of environ\n\n");
+    (void)printf("end of environ\n\n");
     
     pid_t pid;
     int flag = 0;
@@ -84,17 +84,17 @@ int main(int argc, char *argv[], char *envp[]){
                        switch (get) {
                            case '+':{
                                         child_path = get_path_from_getenv("CHILD_PATH");
-                                        (void)printf("CHILD_PATH=%s\n", child_path);
+                                        //(void)printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '&':{
                                         child_path = get_path_from_env(envp, "CHILD_PATH");
-                                        (void)printf("CHILD_PATH=%s\n", child_path);
+                                        //(void)printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            case '*':{
                                         child_path = get_path_from_environ("CHILD_PATH");
-                                        (void)printf("CHILD_PATH=%s\n", child_path);
+                                        //(void)printf("CHILD_PATH=%s\n", child_path);
                                         break;
                                     }
                            default:{
