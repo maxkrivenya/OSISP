@@ -5,43 +5,54 @@
 #define MAX_CHILD_AMT 10
 
 int main(int argc, char *argv[], char *envp[]){
-    pid_t child[MAX_CHILD_AMT];
-    for(int i = 0; i < MAX_CHILD_AMT; i++){
-        child[i] = 0;
-    }
-    int i = 0;
-    printf("volatile=%d\n",print_allowed);
-    if(argc < 1){return -1;}
     if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
         (void)perror("signal");
         (void)exit(EXIT_FAILURE);
     }
 
-    char list[50] = "ps -o pid --ppid ";
-    char kill_children[20] = "pkill -P ";
-    char ppid [7];
-    sprintf(ppid,"%d",getpid());
-    strcat(list,ppid);
-    strcat(kill_children, ppid);
-    pid_t pid;
-    int flag = 0;
+    int i       = 0;
+    int id      = 0;
+    int flag    = 0;
     int counter = 0;
-    pid_t max_pid = 0;
 
+
+    pid_t pid       = 0;
+    pid_t max_pid   = 0;
+    pid_t child[MAX_CHILD_AMT];
+    for(i = 0; i < MAX_CHILD_AMT; i++){
+        child[i] = 0;
+    }
+
+    char comm   = '\n';   // command (+/-/g/s/p)
+    char* get   = (char*)calloc(COMMAND_LENGTH,1); //init g<K> string
     char* name  = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
-    char* get  = (char*)calloc(COMMAND_LENGTH,1); //init g<K> string
-    char comm;
-
-    int id = 0;
-    
-    (void)strcat(name,  CHILD_NAME);
+    if(get==NULL){
+        perror("malloc");
+        exit(-1);
+    } 
+    if(name==NULL){
+        perror("malloc");
+        exit(-1);
+    }
+    (void)strcpy(name,  CHILD_NAME);
+    if(name==NULL){
+        perror("strcpy");
+        exit(-1);
+    }
 
     (void)fflush(stdin);
-    do{ 
-        get = fgets(get, COMMAND_LENGTH-1, stdin); //comm="X<Y>"
-        comm = get[0];
-        if(get[1] == '<' && isdigit(get[2])){
-            id = get[2] - '0';
+    do{
+        if(counter < 0){
+            for(counter = 0; 
+                counter < MAX_CHILD_AMT && child[counter] != 0; 
+                counter++
+            );  //counter = FIRST i WHERE child[i] = 0
+        }
+       printf(": ");
+        get = fgets(get, COMMAND_LENGTH-1, stdin); //get  = "X<Y>"
+        comm = get[0];                             //comm = 'X'
+        if(get[1] == '<' && isdigit(get[2])){      //if "X<",
+            id = get[2] - '0';                       //get number
         }else{
             id = -1;
         }
@@ -61,28 +72,44 @@ int main(int argc, char *argv[], char *envp[]){
                          break;
                      }
             case 'k':{
-                         (void)puts("killing everyone...\n");
-                         for(int i = 0; i < MAX_CHILD_AMT; i++){
-                             if(child[i] != 0){
-                                 kill(child[i],SIGINT);
-                                 child[i] = 0;
+                         if(id==-1){
+                             (void)puts("killing everyone...\n");
+                             for(int i = 0; i < MAX_CHILD_AMT; i++){
+                                 if(child[i] != 0){
+                                     flag = kill(child[i],SIGINT);
+                                     child[i] = 0;
+                                 }
+                             }
+                             (void)puts("everyone is dead.\n");
+                         }else{
+                             if(id > 0 && id < MAX_CHILD_AMT){
+                                 if(child[id] != 0){
+                                     kill(child[id],SIGINT);
+                                     printf("killed child%d - %d\n",id,child[id]);
+                                     child[id]=0;
+                                 }else{
+                                     printf("no such process!\n");
+                                 }
+                             }else{
+                                 printf("id out of range 0-%d\n",MAX_CHILD_AMT);
                              }
                          }
-                         (void)puts("everyone is dead.\n");
+                         counter = -1;
                          break;
                      }
             case 'g':{
                          signal(SIGUSR1,sig1_handler);
                          if(id < 0){
+                             printf("everyone is allowed to print.\n");
                              for(i = 0; i < MAX_CHILD_AMT; i++){
                                  if(child[i] != 0){
-                                     printf("allowing %d\n",child[i]);
                                      flag = kill(child[i],SIGUSR1);
                                  }
                              }
                          }else{
                              if(id < MAX_CHILD_AMT){
                                  if(child[id] != 0){
+                                     printf("C%d-%d is allowed to print\n",i,child[i]);
                                      flag = kill(child[id], SIGUSR1);
                                  }
                              }else{
@@ -98,19 +125,22 @@ int main(int argc, char *argv[], char *envp[]){
             case 's':{
                          signal(SIGUSR2,sig2_handler);
                          if(id < 0){
+                             printf("everyone is forbidden to print.\n");
                              for(i = 0; i < MAX_CHILD_AMT; i++){
-                                 flag = kill(child[i],SIGUSR2);
+                                 if(child[i] != 0){
+                                     flag = kill(child[i],SIGUSR2);
+                                 }
                              }
                          }else{
                              if(id < MAX_CHILD_AMT){
                                  if(child[id] != 0){
+                                     printf("C%d-%d is forbidden to print.\n",id,child[id]);
                                      flag = kill(child[id], SIGUSR2);
                                  }
                              }else{
                                  printf("pid(C<%d>) = 0!\n", id);
                              }
                          }
-                         printf("volatile=%d, forbidden\n",print_allowed);
                          if(flag==-1){
                              perror("kill");
                              exit(-1);
@@ -118,24 +148,19 @@ int main(int argc, char *argv[], char *envp[]){
                          break;
                      }
             case 'l':{  
-                         printf("child list:\n");
                          for (int i = 0; i < MAX_CHILD_AMT; i++) {
-                             if(child[i]!=0){
+                             if(child[i] != 0){ 
                                  printf("\t[%d]-'%d'\n",i,child[i]);
+                             }else{
+                                 printf("\t[%d]-none\n",i);
                              }
                          }
-                         printf("children listed.\n");
                          break;
-
                      }
 
             case '+':{
                          if(counter >= MAX_CHILD_AMT){
-                             //(void)printf("cant create more children\n");
-                             //break;
-                             while(counter >= MAX_CHILD_AMT){
-                                 counter -= MAX_CHILD_AMT;
-                             }
+                            printf("\nERROR: can't make more children! max amt = %d\n\n", MAX_CHILD_AMT);
                          }
 
                          //forking
@@ -165,14 +190,12 @@ int main(int argc, char *argv[], char *envp[]){
                                     }
 
                              default:{       //for parent
-                                         counter++;
-                                         for(i = 0; i < MAX_CHILD_AMT && child[i] != 0; i++);
-                                         child[i] = pid;
-                                         //(void)printf("child : %jd\n", (intmax_t) pid);
-
+                                         printf("created C%d-%d\n",counter,pid);
+                                         child[counter] = pid;
                                          break;
                                      }      
                          }
+                         counter = -1;
                          break;
                      }
             case '-':{
@@ -180,7 +203,8 @@ int main(int argc, char *argv[], char *envp[]){
                          int max_pid_id = -1;
                          flag = 0;
                          for(int i = 0; i < MAX_CHILD_AMT; i++){
-                             if(child[i] > max_pid && child[i] != 0){
+                             //SELECT child WHERE MAX(pid)
+                             if(child[i] > max_pid && child[i] != 0){                              
                                  max_pid = child[i];
                                  max_pid_id = i;
                              }
@@ -190,6 +214,7 @@ int main(int argc, char *argv[], char *envp[]){
                                  && max_pid_id >= 0
                            ){
                              flag = kill(max_pid,SIGINT);
+                             printf("killed C%d-%d\n",max_pid_id,max_pid);
                              child[max_pid_id] = 0;
                          }else{
                              printf("no more children to delete\n");
@@ -199,6 +224,7 @@ int main(int argc, char *argv[], char *envp[]){
                              printf("id = '%d', max_pid='%d'\n",max_pid_id,max_pid);
                              exit(-1);
                          }
+                         counter = -1;
                          break;
                      }
             default:{
