@@ -1,26 +1,16 @@
-
-#include <errno.h>
-#include <string.h>
-#define CHILD_PATH "./child"
-#define CHILD_NAME "child"
-#define NAME_SIZE 10
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <dirent.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <unistd.h>
+#include "header.h"
 #include <signal.h>
-#include <stdint.h>
-#include <string.h>
-#include <errno.h>
-#define POSIX_PATH_MAX 512
-int kill(pid_t pid, int sig);
-
+#include <stdio.h>
+#define COMMAND_LENGTH 6 
+#define MAX_CHILD_AMT 10
 
 int main(int argc, char *argv[], char *envp[]){
+    pid_t child[MAX_CHILD_AMT];
+    for(int i = 0; i < MAX_CHILD_AMT; i++){
+        child[i] = 0;
+    }
+    int i = 0;
+    printf("volatile=%d\n",print_allowed);
     if(argc < 1){return -1;}
     if (signal(SIGCHLD, SIG_IGN) == SIG_ERR) {
         (void)perror("signal");
@@ -35,22 +25,27 @@ int main(int argc, char *argv[], char *envp[]){
     strcat(kill_children, ppid);
     pid_t pid;
     int flag = 0;
-    char get;
     int counter = 0;
+    pid_t max_pid = 0;
 
-    char* name = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
+    char* name  = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
+    char* get  = (char*)calloc(COMMAND_LENGTH,1); //init g<K> string
+    char comm;
 
+    int id = 0;
+    
     (void)strcat(name,  CHILD_NAME);
 
     (void)fflush(stdin);
     do{ 
-        get = getc(stdin);  //read command symbol
-        // bufclear = getc(stdin);        //remove \n from stdin
-       // if(bufclear != '\n'){
-       //     get = bufclear;
-       // }
-
-        switch(get){
+        get = fgets(get, COMMAND_LENGTH-1, stdin); //comm="X<Y>"
+        comm = get[0];
+        if(get[1] != '\n' && isdigit(get[2])){
+            id = get[2] - '0';
+        }else{
+            id = -1;
+        }
+        switch(comm){
             case '\n':{
                           break;
                       }
@@ -65,26 +60,35 @@ int main(int argc, char *argv[], char *envp[]){
                          (void)exit(1);
                          break;
                      }
-            case 'l':{
-                         (void)system(list);
-                         break;
-                     }
             case 'k':{
                          (void)puts("killing everyone...\n");
-                         (void)system(kill_children);
+                         for(int i = 0; i < MAX_CHILD_AMT; i++){
+                             if(child[i] != 0){
+                                 kill(child[i],SIGINT);
+                                 child[i] = 0;
+                             }
+                         }
                          (void)puts("everyone is dead.\n");
                          break;
                      }
-            case '-':{
-                         flag = kill(pid,SIGINT);
-                         if(flag==-1){
-                             perror("kill");
-                             exit(-1);
-                         }
-                         break;
-                     }
             case 'g':{
-                         flag = kill(0,SIGUSR1);
+                         signal(SIGUSR1,sig1_handler);
+                         if(id < 0){
+                             for(i = 0; i < MAX_CHILD_AMT; i++){
+                                 flag = kill(child[i],SIGUSR1);
+                                 child[i]=0;
+                             }
+                         }else{
+                             if(id < MAX_CHILD_AMT){
+                                 if(child[id] != 0){
+                                     flag = kill(child[id], SIGUSR1);
+                                     child[id]=0;
+                                 }
+                             }else{
+                                 printf("pid(C<%d>) = 0!\n", id);
+                             }
+                         }
+                         printf("volatile=%d, granted\n",print_allowed);
                          if(flag==-1){
                              perror("kill");
                              exit(-1);
@@ -92,58 +96,114 @@ int main(int argc, char *argv[], char *envp[]){
                          break;
                      }
             case 's':{
-                         flag = kill(0,SIGUSR2);
+                         signal(SIGUSR2,sig2_handler);
+                         if(id < 0){
+                             for(i = 0; i < MAX_CHILD_AMT; i++){
+                                 flag = kill(child[i],SIGUSR2);
+                                 child[i]=0;
+                             }
+                         }else{
+                             if(id < MAX_CHILD_AMT){
+                                 if(child[id] != 0){
+                                     flag = kill(child[id], SIGUSR2);
+                                     child[id]=0;
+                                 }
+                             }else{
+                                 printf("pid(C<%d>) = 0!\n", id);
+                             }
+                         }
+                         printf("volatile=%d, forbidden\n",print_allowed);
                          if(flag==-1){
                              perror("kill");
                              exit(-1);
                          }
                          break;
                      }
+            case 'l':{  
+                         printf("child list:\n");
+                         for (int i = 0; i < MAX_CHILD_AMT; i++) {
+                             if(child[i]!=0){
+                                 printf("\t[%d]-'%d'\n",i,child[i]);
+                             }
+                         }
+                         printf("children listed.\n");
+                         break;
 
-            default:{
-                        if(counter > 99){
-                            (void)printf("cant create more children\n");
-                            break;
-                        }
+                     }
 
-                        //forking
-                        pid = fork();
+            case '+':{
+                         if(counter >= MAX_CHILD_AMT){
+                             (void)printf("cant create more children\n");
+                             break;
+                         }
 
-                        switch (pid) {
-                            case -1:{                           //fork failed
-                                        (void)perror("fork");
-                                        (void)free(name);
-                                        (void)exit(EXIT_FAILURE);
+                         //forking
+                         pid = fork();
 
-                                    }
+                         switch (pid) {
+                             case -1:{                           //fork failed
+                                         (void)perror("fork");
+                                         (void)free(name);
+                                         (void)exit(EXIT_FAILURE);
 
-                            case 0:{                            //for forked
-                                       //update process name
-                                       name[5] = '0' + counter / 10;
-                                       name[6] = '0' + counter % 10;
-                                       argv[0] = name;
-                                       flag = execve(CHILD_PATH, argv, envp);
-                                       if(flag == -1){
-                                           (void)printf("execve error:%s\n", strerror(errno));
-                                           (void)exit(EXIT_FAILURE);
-                                       }
-                                       exit(1);
-                                       break;
-                                   }
+                                     }
 
-                            default:{       //for parent
-                                        counter++;
-                                        (void)printf("child : %jd\n", (intmax_t) pid);
-                                      /*  (void)wait(&flag);
-                                        if (flag == -1) {
-                                            (void)perror("waitpid");
-                                            (void)free(name);
+                             case 0:{                            //for forked
+
+                                        //update process name
+                                        for(i = 0; i < MAX_CHILD_AMT && child[i] != 0 && child[i] != getpid(); i++);
+                                        name[5] = '0' + i;
+                                        argv[0] = name;
+                                        flag = execve(CHILD_PATH, argv, envp);
+                                        if(flag == -1){
+                                            (void)printf("execve error:%s\n", strerror(errno));
                                             (void)exit(EXIT_FAILURE);
                                         }
-                                        */
+                                        exit(1);
                                         break;
-                                    }      
-                        }
+                                    }
+
+                             default:{       //for parent
+                                         counter++;
+                                         for(i = 0; i < MAX_CHILD_AMT && child[i] != 0; i++);
+                                         child[i] = pid;
+                                         //(void)printf("child : %jd\n", (intmax_t) pid);
+
+                                         break;
+                                     }      
+                         }
+            case '-':{
+                         pid_t max_pid = -1;
+                         int max_pid_id = -1;
+                         flag = 0;
+                         for(int i = 0; i < MAX_CHILD_AMT; i++){
+                             if(child[i] > max_pid && child[i] != 0){
+                                 max_pid = child[i];
+                                 max_pid_id = i;
+                             }
+                         }
+                         if(max_pid > 0 
+                                 && max_pid_id < MAX_CHILD_AMT 
+                                 && max_pid_id >= 0
+                           ){
+                                 flag = kill(max_pid,SIGINT);
+                                 child[max_pid_id] = 0;
+                         }else{
+                             printf("no more children to delete\n");
+                         }
+                         if(flag==-1){
+                             perror("kill");
+                             printf("id = '%d', max_pid='%d'\n",max_pid_id,max_pid);
+                             exit(-1);
+                         }
+                         break;
+                     }
+                         break;
+                     }
+            default:{
+                        printf("unknown command\n");
+                        break;
+
                     }
         } 
 
