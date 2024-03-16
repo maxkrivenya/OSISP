@@ -15,7 +15,6 @@ int main(int argc, char *argv[], char *envp[]){
     int flag    = 0;
     int counter = 0;
 
-
     pid_t pid       = 0;
     pid_t max_pid   = 0;
     pid_t child[MAX_CHILD_AMT];
@@ -159,70 +158,85 @@ int main(int argc, char *argv[], char *envp[]){
                      }
 
             case '+':{
-                         if(counter >= MAX_CHILD_AMT){
-                            printf("\nERROR: can't make more children! max amt = %d\n\n", MAX_CHILD_AMT);
-                         }
+                         if(id == -1){id = 1;}
+                         for(i = 0; i < id; i++){
+                             if(counter < 0){
+                                 for(counter = 0; 
+                                         counter < MAX_CHILD_AMT && child[counter] != 0; 
+                                         counter++
+                                    );  //counter = FIRST i WHERE child[i] = 0
+                             }
+                             if(counter < 0 || counter >= MAX_CHILD_AMT){
+                                 printf("\nERROR: can't make more children! max amt = %d\n\n", MAX_CHILD_AMT);
+                                 counter = -1;
+                                 break;
+                             }
 
-                         //forking
-                         pid = fork();
+                             //forking
+                             pid = fork();
 
-                         switch (pid) {
-                             case -1:{                           //fork failed
-                                         (void)perror("fork");
-                                         (void)free(name);
-                                         (void)exit(EXIT_FAILURE);
+                             switch (pid) {
+                                 case -1:{                           //fork failed
+                                             (void)perror("fork");
+                                             (void)free(name);
+                                             (void)exit(EXIT_FAILURE);
 
-                                     }
+                                         }
 
-                             case 0:{                            //for forked
+                                 case 0:{                            //for forked
 
-                                        //update process name
-                                       // for(i = 0; i < MAX_CHILD_AMT && child[i] != 0 && child[i] != getpid(); i++);
-                                        name[5] = '0' + counter;
-                                        argv[0] = name;
-                                        flag = execve(CHILD_PATH, argv, envp);
-                                        if(flag == -1){
-                                            (void)printf("execve error:%s\n", strerror(errno));
-                                            (void)exit(EXIT_FAILURE);
+                                            //update process name
+                                            // for(i = 0; i < MAX_CHILD_AMT && child[i] != 0 && child[i] != getpid(); i++);
+                                            name[5] = '0' + counter;
+                                            argv[0] = name;
+                                            flag = execve(CHILD_PATH, argv, envp);
+                                            if(flag == -1){
+                                                (void)printf("execve error:%s\n", strerror(errno));
+                                                (void)exit(EXIT_FAILURE);
+                                            }
+                                            exit(1);
+                                            break;
                                         }
-                                        exit(1);
-                                        break;
-                                    }
 
-                             default:{       //for parent
-                                         printf("created C%d-%d\n",counter,pid);
-                                         child[counter] = pid;
-                                         break;
-                                     }      
+                                 default:{       //for parent
+                                             printf("created C%d-%d\n",counter,pid);
+                                             child[counter] = pid;
+                                             break;
+                                         }      
+                             }
+                             counter = -1;
                          }
-                         counter = -1;
                          break;
                      }
             case '-':{
-                         pid_t max_pid = -1;
-                         int max_pid_id = -1;
-                         flag = 0;
-                         for(int i = 0; i < MAX_CHILD_AMT; i++){
-                             //SELECT child WHERE MAX(pid)
-                             if(child[i] > max_pid && child[i] != 0){                              
-                                 max_pid = child[i];
-                                 max_pid_id = i;
+                         if(id == -1){id = 1;}
+                         for(int i = 0; i < id; i++){
+                             pid_t max_pid = -1;
+                             int max_pid_id = -1;
+                             flag = 0;
+                             for(int i = 0; i < MAX_CHILD_AMT; i++){
+                                 //SELECT child WHERE MAX(pid)
+                                 if(child[i] > max_pid && child[i] != 0){                              
+                                     max_pid = child[i];
+                                     max_pid_id = i;
+                                 }
                              }
-                         }
-                         if(max_pid > 0 
-                                 && max_pid_id < MAX_CHILD_AMT 
-                                 && max_pid_id >= 0
-                           ){
-                             flag = kill(max_pid,SIGINT);
-                             printf("killed C%d-%d\n",max_pid_id,max_pid);
-                             child[max_pid_id] = 0;
-                         }else{
-                             printf("no more children to delete\n");
-                         }
-                         if(flag==-1){
-                             perror("kill");
-                             printf("id = '%d', max_pid='%d'\n",max_pid_id,max_pid);
-                             exit(-1);
+                             if(max_pid > 0 
+                                     && max_pid_id < MAX_CHILD_AMT 
+                                     && max_pid_id >= 0
+                               ){
+                                 flag = kill(max_pid,SIGINT);
+                                 printf("killed C%d-%d\n",max_pid_id,max_pid);
+                                 child[max_pid_id] = 0;
+                             }else{
+                                 printf("no more children to delete\n");
+                                 break;
+                             }
+                             if(flag==-1){
+                                 perror("kill");
+                                 printf("id = '%d', max_pid='%d'\n",max_pid_id,max_pid);
+                                 exit(-1);
+                             }
                          }
                          counter = -1;
                          break;
