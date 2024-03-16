@@ -1,6 +1,4 @@
 #include "header.h"
-#include <signal.h>
-#include <stdio.h>
 #define COMMAND_LENGTH 6 
 #define MAX_CHILD_AMT 10
 
@@ -24,7 +22,7 @@ int main(int argc, char *argv[], char *envp[]){
 
     char comm   = '\n';   // command (+/-/g/s/p)
     char* get   = (char*)calloc(COMMAND_LENGTH,1); //init g<K> string
-    char* name  = (char*)calloc(NAME_SIZE,1); //init "CHILD%d%d" string
+    char* name  = (char*)calloc(CHILD_NAME_SIZE,1); //init "CHILD%d%d" string
     if(get==NULL){
         perror("malloc");
         exit(-1);
@@ -43,11 +41,11 @@ int main(int argc, char *argv[], char *envp[]){
     do{
         if(counter < 0){
             for(counter = 0; 
-                counter < MAX_CHILD_AMT && child[counter] != 0; 
-                counter++
-            );  //counter = FIRST i WHERE child[i] = 0
+                    counter < MAX_CHILD_AMT && child[counter] != 0; 
+                    counter++
+               );  //counter = FIRST i WHERE child[i] = 0
         }
-       printf(": ");
+        printf(": ");
         get = fgets(get, COMMAND_LENGTH-1, stdin); //get  = "X<Y>"
         comm = get[0];                             //comm = 'X'
         if(get[1] == '<' && isdigit(get[2])){      //if "X<",
@@ -94,6 +92,16 @@ int main(int argc, char *argv[], char *envp[]){
                              }
                          }
                          counter = -1;
+                         break;
+                     } 
+            case 'l':{  
+                         for (int i = 0; i < MAX_CHILD_AMT; i++) {
+                             if(child[i] != 0){ 
+                                 printf("\tC%d-'%d'\n",i,child[i]);
+                             }else{
+                                 printf("\tC%d-none\n",i);
+                             }
+                         }
                          break;
                      }
             case 'g':{
@@ -146,17 +154,23 @@ int main(int argc, char *argv[], char *envp[]){
                          }
                          break;
                      }
-            case 'l':{  
-                         for (int i = 0; i < MAX_CHILD_AMT; i++) {
-                             if(child[i] != 0){ 
-                                 printf("\t[%d]-'%d'\n",i,child[i]);
-                             }else{
-                                 printf("\t[%d]-none\n",i);
+            case 'p':{
+                         if(child[id]==0){
+                             printf("\tC%d doesn't exist. no changes were made.\n",id);
+                             break;
+                         }
+
+                         for(i = 0; i < MAX_CHILD_AMT; i++){
+                             if(child[i] != 0){
+                                 if(i==id){
+                                     kill(child[i],SIGUSR1);
+                                 }else{
+                                     kill(child[i],SIGUSR2);
+                                 }
                              }
                          }
                          break;
                      }
-
             case '+':{
                          if(id == -1){id = 1;}
                          for(i = 0; i < id; i++){
@@ -187,7 +201,7 @@ int main(int argc, char *argv[], char *envp[]){
 
                                             //update process name
                                             // for(i = 0; i < MAX_CHILD_AMT && child[i] != 0 && child[i] != getpid(); i++);
-                                            name[5] = '0' + counter;
+                                            name[CHILD_NAME_SIZE-2] = '0' + counter;
                                             argv[0] = name;
                                             flag = execve(CHILD_PATH, argv, envp);
                                             if(flag == -1){

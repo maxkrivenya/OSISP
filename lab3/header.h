@@ -11,8 +11,8 @@
 #include <string.h>
 #include <ctype.h>
 #define CHILD_PATH "./child"
-#define CHILD_NAME "child"
-#define NAME_SIZE 9
+#define CHILD_NAME "C"
+#define CHILD_NAME_SIZE 3
 
 int nanosleep(const struct timespec *req, struct timespec *rem);
 int kill(pid_t pid, int sig);
