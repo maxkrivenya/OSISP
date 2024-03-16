@@ -12,8 +12,6 @@ int main(int argc, char* argv[]){
     struct timespec result_t = {0,0};
 
     pid_t pid   = -1;
-    
-    int flag    = 0;
     int i       = 0;
     
     for(;;){
@@ -32,7 +30,7 @@ int main(int argc, char* argv[]){
 
             switch (pid) {
                 case -1:{                           //fork failed
-                            (void)perror("fork");
+                            printf("%s\n",strerror(errno));
                             (void)exit(EXIT_FAILURE);
 
                         }
@@ -41,7 +39,7 @@ int main(int argc, char* argv[]){
                            close(pipefd[0]);    // close read end of pipe
                            
                            char message = 'a';
-                           flag = nanosleep(&first_t,&second_t);   //sleep
+                           (void)nanosleep(&first_t,&second_t);   //sleep
                            write(pipefd[1], &message, sizeof(char)); //wake up, write message to parent
                            
                            close(pipefd[1]);    // close write end of pipe

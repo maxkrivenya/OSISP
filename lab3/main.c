@@ -84,7 +84,7 @@ int main(int argc, char *argv[], char *envp[]){
                              }
                              (void)puts("everyone is dead.\n");
                          }else{
-                             if(id > 0 && id < MAX_CHILD_AMT){
+                             if(id >= 0 && id < MAX_CHILD_AMT){
                                  if(child[id] != 0){
                                      flag = kill(child[id],SIGINT);
                                      if(flag==-1){
