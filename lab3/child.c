@@ -7,16 +7,16 @@ int main(int argc, char* argv[]){
     if(argc < 1){return -1;}
     signal(SIGUSR1,sig1_handler);
     signal(SIGUSR2,sig2_handler);
-    struct combination combination_t = {0,0,0,0};
 
-    struct timespec first_t = {0,5000000};
+    struct timespec first_t = {0,10000000};
     struct timespec second_t = {2,50};
     struct timespec result_t = {0,0};
     pid_t pid;
     int flag = 0;
     int i = 0;
     for(;;){
-        for(;i < 101;i++){
+        struct combination combination_t = {0,0,0,0};
+        for(i = 0;i < 200;i++){
 
             int   pipefd[2];            // pipe for process communication,
             if (pipe(pipefd) == -1) {   // [0] = read, [1] = write
@@ -38,16 +38,6 @@ int main(int argc, char* argv[]){
                                                 //
                            char message = 'a';
                            flag = nanosleep(&first_t,&second_t);   //sleep
-                           if(flag==-1){
-                               /*
-                                  perror("nanosleep");
-                                  exit(-1);
-
-                                  default error msg, 
-                                  but im not sure i need to do this
-                                  */
-                               flag = 0;
-                           }
                            write(pipefd[1], &message, sizeof(char)); //wake up, write message to parent
 
                            close(pipefd[1]);    // close write end of pipe
@@ -99,9 +89,7 @@ int main(int argc, char* argv[]){
                     combination_t.ten,
                     combination_t.eleven)
                 ;
-            //printf("%d-%d\n",getpid(),print_allowed);
-        }
-        exit(1);
-    }
-    return 0;
+        }}
+    printf("%s exiting.\n",argv[0]);
+    exit(1);
 }
