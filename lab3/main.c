@@ -1,4 +1,5 @@
 #include "header.h"
+#include <stdio.h>
 #define COMMAND_LENGTH 6 
 #define MAX_CHILD_AMT 10
 
@@ -74,6 +75,10 @@ int main(int argc, char *argv[], char *envp[]){
                              for(int i = 0; i < MAX_CHILD_AMT; i++){
                                  if(child[i] != 0){
                                      flag = kill(child[i],SIGINT);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                      child[i] = 0;
                                  }
                              }
@@ -81,7 +86,11 @@ int main(int argc, char *argv[], char *envp[]){
                          }else{
                              if(id > 0 && id < MAX_CHILD_AMT){
                                  if(child[id] != 0){
-                                     kill(child[id],SIGINT);
+                                     flag = kill(child[id],SIGINT);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                      printf("killed child%d - %d\n",id,child[id]);
                                      child[id]=0;
                                  }else{
@@ -111,6 +120,10 @@ int main(int argc, char *argv[], char *envp[]){
                              for(i = 0; i < MAX_CHILD_AMT; i++){
                                  if(child[i] != 0){
                                      flag = kill(child[i],SIGUSR1);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                  }
                              }
                          }else{
@@ -118,6 +131,10 @@ int main(int argc, char *argv[], char *envp[]){
                                  if(child[id] != 0){
                                      printf("C%d-%d is allowed to print\n",i,child[i]);
                                      flag = kill(child[id], SIGUSR1);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                  }
                              }else{
                                  printf("pid(C<%d>) = 0!\n", id);
@@ -136,6 +153,10 @@ int main(int argc, char *argv[], char *envp[]){
                              for(i = 0; i < MAX_CHILD_AMT; i++){
                                  if(child[i] != 0){
                                      flag = kill(child[i],SIGUSR2);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                  }
                              }
                          }else{
@@ -143,6 +164,10 @@ int main(int argc, char *argv[], char *envp[]){
                                  if(child[id] != 0){
                                      printf("C%d-%d is forbidden to print.\n",id,child[id]);
                                      flag = kill(child[id], SIGUSR2);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                  }
                              }else{
                                  printf("pid(C<%d>) = 0!\n", id);
@@ -163,9 +188,18 @@ int main(int argc, char *argv[], char *envp[]){
                          for(i = 0; i < MAX_CHILD_AMT; i++){
                              if(child[i] != 0){
                                  if(i==id){
-                                     kill(child[i],SIGUSR1);
+                                     flag = kill(child[i],SIGUSR1);
+                                     printf("only C%d-%d is allowed to print\n", i, child[i]);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                  }else{
-                                     kill(child[i],SIGUSR2);
+                                     flag = kill(child[i],SIGUSR2);
+                                     if(flag==-1){
+                                         printf("%s\n",strerror(errno));
+                                         exit(-1);
+                                     }
                                  }
                              }
                          }
@@ -240,6 +274,10 @@ int main(int argc, char *argv[], char *envp[]){
                                      && max_pid_id >= 0
                                ){
                                  flag = kill(max_pid,SIGINT);
+                                 if(flag==-1){
+                                     printf("%s\n",strerror(errno));
+                                     exit(-1);
+                                 }
                                  printf("killed C%d-%d\n",max_pid_id,max_pid);
                                  child[max_pid_id] = 0;
                              }else{
