@@ -1,5 +1,4 @@
 #include "header.h"
-#include <stdio.h>
 #define COMMAND_LENGTH 6 
 #define MAX_CHILD_AMT 10
 
