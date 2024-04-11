@@ -2,8 +2,8 @@ CC=gcc
 CFLAGS= -W -Wall -Wextra -std=c11
 .PHONY: clean
 
-all: main #child
+all: main producer
 main: main.c makefile
 		$(CC) $(CFLAGS) main.c -o main
-#child: child.c makefile
-#		$(CC) $(CFLAGS) child.c -o child
+producecr: producer.c makefile
+		$(CC) $(CFLAGS) producer.c -o producer

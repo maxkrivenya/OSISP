@@ -1,34 +1,32 @@
-#include "header.h"
+#include <sys/msg.h>
+#include <sys/sem.h>
+#include <sys/shm.h>
+#include <sys/ipc.h>
+#include <sys/types.h>
 
-struct Message{
-    char* value;
+struct message{
+    char* content;
 };
 
-struct Message createMessage(char* value){
-    struct Message message;
-    
-    message.value = (char*)calloc(sizeof(value),sizeof(char));
-    (void)strcpy(message.value, value);
+/*
+ * content[0]                           = type
+ * content[1->2]                        = hash
+ * content[3]                           = size
+ * content[4 -> (4 + ((size+3)/4)*4)]   = data
+ *
+ * */
 
-    return message;
-}
+void queue_stat(int msqid){
+    int flag = 0;
 
-void deleteMessage(struct Message* message){
-    if(message==NULL){
-        return;
+    flag = msgctl(msqid, IPC_STAT, &buf);
+    if(flag==-1){
+        strerror(errno);
+        exit(-1);
     }
-    if((*message).value==NULL){
-        return;
-    }
-    (void)free((*message).value);
-    return;
-}
 
-void printMessage(struct Message message){
-    if(message.value == NULL){
-        (void)printf("NULL\n");
-        return;
-    }
-    (void)puts(message.value);
+    printf("\tpermissions: %d\n", buf.msg_perm.mode);
+    printf("\tamt of msgs: %lu\n", buf.msg_qnum);
+   
+    /*
 }
-
