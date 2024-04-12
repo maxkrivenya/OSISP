@@ -24,9 +24,15 @@ void sig1_handler(int sig){
     killed = 1;
 }
 
+volatile int msg_read = 0;
+void sig2_handler(int sig){
+    signal(SIGUSR2, sig2_handler);
+    msg_read = 1;
+}
 struct message{
     long mtype;
-    char* content;
+    //char* content;
+    char content[260];
 };
 
 /*
@@ -37,7 +43,7 @@ struct message{
  *
  * */
 
-void queue_stat(int msqid){
+void msq_stat(int msqid){
     int flag = 0;
     struct msqid_ds buf; 
    
@@ -52,14 +58,12 @@ void queue_stat(int msqid){
 }
 
 void msgprint(struct message msg){
-    if(msg.content == NULL){return;}
-
     int size = msg.content[3] & 0xFF;
     printf("\ttype:%c\n\thash:%c%c\n\tsize:%d\n\tdata:",msg.content[0], msg.content[1] , msg.content[2], size);
     for(int i = 0; i < size; i++){
         printf("%c", msg.content[i]);
     }
-    printf("\n");
+    printf(LINE_SEPARATOR);
 }
 
 struct message msg_create(){
@@ -71,15 +75,11 @@ struct message msg_create(){
         sizeint = rand()%257;
     }while(!sizeint);
 
-    printf(LINE_SEPARATOR);
-    printf("size:%d\n", sizeint);
-    printf(LINE_SEPARATOR);
-    
     if(sizeint < 256){
         sizechar = sizeint;
     }
     msg.mtype = 1;
-    msg.content = (char*)calloc(4 + sizeint + 1, 1);
+//    msg.content = (char*)calloc(4 + sizeint + 1, 1);
     for(int i = 4; i < 4 + sizeint; i++){
         msg.content[i] = 'A' + rand()%26;
         word = word + (msg.content[i] % 10);

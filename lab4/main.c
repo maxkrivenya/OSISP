@@ -1,5 +1,5 @@
 #include "header.h"
-#define n 10
+#define n 5
 
 //shared enum {false,true} choosing[n];
 //shared int number[n];
@@ -18,7 +18,9 @@
 //
 
 int main(int argc, char* argv[], char* envp[]){
+    printf(LINE_SEPARATOR);
     printf("main started\n");
+    printf(LINE_SEPARATOR);
 
     int msqid  = 0; 
     int flag   = 0; 
@@ -28,12 +30,7 @@ int main(int argc, char* argv[], char* envp[]){
 
     struct message msg = msg_create();
     struct message msg2 = msg_create();
-
-    printf(LINE_SEPARATOR);
-    msgprint(msg);
-    printf(LINE_SEPARATOR);
-    msgprint(msg2);
-    printf(LINE_SEPARATOR);
+    struct message msg3 = msg_create();
 
     key = ftok(FTOK_1, FTOK_2);
     msqid = msgget(key, (IPC_CREAT | 0666));
@@ -47,32 +44,18 @@ int main(int argc, char* argv[], char* envp[]){
 
     printf(LINE_SEPARATOR);
 
-
-
-    queue_stat(msqid);
-    printf(LINE_SEPARATOR);
-
     flag = msgsnd(msqid, &msg2, sizeof(msg2), 0);
     if(flag == -1){
         strerror(errno);
         exit(-1);
     }
 
-    queue_stat(msqid);
-    printf(LINE_SEPARATOR);
-    /*
-       struct message rcv;
-       printf("\nprinting from msgrcv:\n");
-       int i = 0;
-       while(msgrcv(msqid,&rcv,sizeof(rcv),0,IPC_NOWAIT) != -1 && i < 10){
-       printf(LINE_SEPARATOR);
-       msgprint(rcv);
-       i = i + 1;
-       }
+    flag = msgsnd(msqid, &msg3, sizeof(msg3), 0);
+    if(flag == -1){
+        strerror(errno);
+        exit(-1);
+    }
 
-       printf(LINE_SEPARATOR);
-
-*/
     pid_t pid = fork();
     switch(pid){
         case -1:{
@@ -94,19 +77,10 @@ int main(int argc, char* argv[], char* envp[]){
                 }
 
     }
-    /*
-       flag = msgctl(msqid, IPC_RMID, &buf);
-       if(flag==-1){
-       strerror(errno);
-       exit(-1);
-       }
-
-       printf("removed msqid %d \n", msqid);
-       */
+    signal(SIGUSR2,sig2_handler);
+    for(;!msg_read;);
     printf("main exit\n");
-
-    free(msg.content);
-    free(msg2.content);
+    printf(LINE_SEPARATOR);
 
     exit(1);
     return 0;
