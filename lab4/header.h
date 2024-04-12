@@ -43,11 +43,12 @@ void queue_stat(int msqid){
 
 void msgprint(struct message msg){
     if(msg.content == NULL){return;}
-    printf("\ttype:%c\n\thash:%d\n\tsize:%c\n\tdata:",msg.content[0], msg.content[1] + msg.content[2], msg.content[3]);
-    for(int i = 0; i < msg.content[3]; i++){
+
+    int size = msg.content[3] & 0xFF;
+    printf("\ttype:%c\n\thash:%c%c\n\tsize:%d\n\tdata:",msg.content[0], msg.content[1] , msg.content[2], size);
+    for(int i = 0; i < size; i++){
         printf("%c", msg.content[i]);
     }
-    printf("size char: %d\n", 0 + msg.content[3]); 
     printf("\n");
 }
 
