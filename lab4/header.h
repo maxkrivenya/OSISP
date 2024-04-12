@@ -12,7 +12,17 @@
 #include <error.h>
 #include <string.h>
 
+#include <signal.h>
+
 #define LINE_SEPARATOR "\n------------------------------------------------\n"
+#define FTOK_1 "main"
+#define FTOK_2 65
+
+volatile int killed = 0;
+void sig1_handler(int sig){
+    signal(SIGUSR1, sig1_handler);
+    killed = 1;
+}
 
 struct message{
     long mtype;
@@ -71,9 +81,11 @@ struct message msg_create(){
     msg.mtype = 1;
     msg.content = (char*)calloc(4 + sizeint + 1, 1);
     for(int i = 4; i < 4 + sizeint; i++){
-        msg.content[i] = 'A' + rand()%27;
+        msg.content[i] = 'A' + rand()%26;
         word = word + (msg.content[i] % 10);
     }
+    msg.content[4 + sizeint] = '\0';
+
     msg.content[0] = '1';
     msg.content[1] = ((unsigned char*)(&word))[0];
     msg.content[2] = ((unsigned char*)(&word))[1];
