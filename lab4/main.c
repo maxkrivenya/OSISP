@@ -1,12 +1,4 @@
 #include "header.h"
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/types.h>
-
 #define n 10
 
 //shared enum {false,true} choosing[n];
@@ -68,17 +60,17 @@ int main(int argc, char* argv[], char* envp[]){
 
     queue_stat(msqid);
     printf(LINE_SEPARATOR);
-/*
-    struct message rcv;
-    printf("\nprinting from msgrcv:\n");
-    int i = 0;
-    while(msgrcv(msqid,&rcv,sizeof(rcv),0,IPC_NOWAIT) != -1 && i < 10){
-        printf(LINE_SEPARATOR);
-        msgprint(rcv);
-        i = i + 1;
-    }
+    /*
+       struct message rcv;
+       printf("\nprinting from msgrcv:\n");
+       int i = 0;
+       while(msgrcv(msqid,&rcv,sizeof(rcv),0,IPC_NOWAIT) != -1 && i < 10){
+       printf(LINE_SEPARATOR);
+       msgprint(rcv);
+       i = i + 1;
+       }
 
-    printf(LINE_SEPARATOR);
+       printf(LINE_SEPARATOR);
 
 */
     pid_t pid = fork();
@@ -91,10 +83,10 @@ int main(int argc, char* argv[], char* envp[]){
         case 0:{
                    argv[0] = "./consumer";
                    argv[1] = NULL;
-                    execve("./consumer", argv, envp);
-                    strerror(errno);
-                    exit(-1);
-                    break;
+                   execve("./consumer", argv, envp);
+                   strerror(errno);
+                   exit(-1);
+                   break;
                }
 
         default:{
@@ -102,15 +94,15 @@ int main(int argc, char* argv[], char* envp[]){
                 }
 
     }
-/*
-    flag = msgctl(msqid, IPC_RMID, &buf);
-    if(flag==-1){
-        strerror(errno);
-        exit(-1);
-    }
+    /*
+       flag = msgctl(msqid, IPC_RMID, &buf);
+       if(flag==-1){
+       strerror(errno);
+       exit(-1);
+       }
 
-    printf("removed msqid %d \n", msqid);
-*/
+       printf("removed msqid %d \n", msqid);
+       */
     printf("main exit\n");
 
     free(msg.content);

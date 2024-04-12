@@ -12,28 +12,25 @@ int main(int argc, char* argv[], char* envp[]){
     queue_stat(msqid);
     printf(LINE_SEPARATOR);
 
-//    do{
-//1. take mutex 
-    
-//2. wait for msg in queue ?
-    
-//3. TAKE msg
-printf("HERE I AM\n");
-        flag = msgrcv(msqid, &msg, sizeof(msg), 0, IPC_NOWAIT); if(flag==-1){ strerror(errno); exit(-1); }
-printf("HERE I AM NOT \n");
-printf("%li\n",msg.mtype);
-//4. inc space
-    
-//5. give mutex
-    
-//6. PARSE msg
-        (void)msgprint(msg);
-        printf("%s\n",msg.content);
-        free(msg.content);
-        flag = msgrcv(msqid, &msg, sizeof(msg), 0, IPC_NOWAIT); if(flag==-1){ strerror(errno); exit(-1); }
-        (void)msgprint(msg);
-        printf("%s\n",msg.content);
-        free(msg.content);
+    //    do{
+    //1. take mutex 
+
+    //2. wait for msg in queue ?
+
+    //3. TAKE msg
+    flag = msgrcv(msqid, &msg, sizeof(msg), 0, IPC_NOWAIT); if(flag==-1){ strerror(errno); exit(-1); }
+
+    //4. inc space
+
+    //5. give mutex
+
+    //6. PARSE msg
+    (void)msgprint(msg);
+    free(msg.content);
+
+    flag = msgrcv(msqid, &msg, sizeof(msg), 0, IPC_NOWAIT); if(flag==-1){ strerror(errno); exit(-1); }
+    (void)msgprint(msg);
+    free(msg.content);
 
 
     flag = msgctl(msqid, IPC_RMID, &buf);
@@ -42,7 +39,7 @@ printf("%li\n",msg.mtype);
         exit(-1);
     }
 
-//7. if signal, exit(1)
-//    }while(killed == 0);
+    //7. if signal, exit(1)
+    //    }while(killed == 0);
     exit(1);
 }
