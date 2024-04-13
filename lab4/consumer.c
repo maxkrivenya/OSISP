@@ -23,7 +23,8 @@ int main(int argc, char* argv[], char* envp[]){
         exit(-1);
     }
 
-    do{
+//    do{
+    for(int i = 0; i < 3; i++){
         //1. take mutex 
         flag = semctl(semid, 0 ,GETALL, arg.array);
         if(flag == -1){
@@ -59,9 +60,10 @@ int main(int argc, char* argv[], char* envp[]){
             (void)msgprint(msg);
         }
 
+    
     //7. if signal, exit(1)
-    }while(killed == 0);
-
+    //}while(killed == 0);
+}
     printf("consumer exit\n");
     printf(LINE_SEPARATOR);
     

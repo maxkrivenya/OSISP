@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <ctype.h>
 
 #include <sys/msg.h>
 #include <sys/sem.h>
@@ -18,6 +19,7 @@
 #define FTOK_1 "main"
 #define FTOK_2 65
 #define MAX_MSG_AMT_IN_QUEUE 3
+#define MAX_CHILD_AMT 5
 
 union semun {
     int val; // значение для SETVAL

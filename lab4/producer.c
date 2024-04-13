@@ -23,8 +23,9 @@ int main(int argc, char* argv[], char* envp[]){
         exit(-1);
     }
 
-    do{
-        //1. CREATE msg
+   // do{
+   for(int i = 0; i < 3; i++){  
+   //1. CREATE msg
         struct message msg = msg_create();
 
         //2. take mutex 
@@ -68,8 +69,8 @@ int main(int argc, char* argv[], char* envp[]){
         }
 
     //6. if signal, exit(1)
-    }while(killed == 0);
-
+  //  }while(killed == 0);
+}
     printf("producer exit\n");
     printf(LINE_SEPARATOR);
 
