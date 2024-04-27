@@ -7,6 +7,7 @@
 #include <sys/sem.h>
 #include <sys/shm.h>
 #include <sys/ipc.h>
+#include <sys/wait.h>
 #include <sys/types.h>
 
 #include <errno.h>
@@ -15,6 +16,10 @@
 
 #include <signal.h>
 
+#include <semaphore.h>
+#include <fcntl.h>
+
+#define MUTEX_NAME "my little mutex"
 #define LINE_SEPARATOR "\n------------------------------------------------\n"
 #define FTOK_1 "main"
 #define FTOK_2 65
