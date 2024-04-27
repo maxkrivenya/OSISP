@@ -9,6 +9,7 @@ int main(int argc, char* argv[], char* envp[]){
     int flag  = 0;
     int msqid = 0;
     int semid = 0;
+    int current = 0;
     struct msqid_ds buf; 
 
     sem_t* mutex = sem_open(MUTEX_NAME,0);
@@ -24,7 +25,7 @@ int main(int argc, char* argv[], char* envp[]){
     key = ftok(FTOK_1,FTOK_2);
 
     msqid = msgget(key, 0666);
-    semid = semget(key, 2, 0644);
+    semid = semget(key, 2, 0666);
 
     if(semid == -1){
         strerror(errno);
@@ -32,11 +33,11 @@ int main(int argc, char* argv[], char* envp[]){
     }
 
     //1. take mutex 
-    printf("%s waiting for mutex...\n", argv[0]);
+    
+    //printf("%s waiting for mutex...\n", argv[0]);
     sem_wait(mutex);
-    printf("%s obtained mutex...\n", argv[0]);
+    //printf("%s obtained mutex...\n", argv[0]);
 
-printf("queue %d semaphres %d stats: %d-%d\n", msqid, semid, arg.array[0], arg.array[1]);
 
     //get semaphores
     flag = semctl(semid, 0 ,GETALL, arg.array);
@@ -44,6 +45,10 @@ printf("queue %d semaphres %d stats: %d-%d\n", msqid, semid, arg.array[0], arg.a
         strerror(errno);
         exit(-1);
     }
+    
+    printf("queue %d semaphres %d stats: %d-%d\n", msqid, semid, arg.array[0], arg.array[1]);
+    current = arg.array[1];
+
     //2. if there is msg in msgq
     if(arg.array[0] > arg.array[1]){
 
@@ -57,12 +62,12 @@ printf("queue %d semaphres %d stats: %d-%d\n", msqid, semid, arg.array[0], arg.a
         }
 
         //4. inc received
-        flag = semctl(semid, 1 ,SETVAL, arg.array[1] + 1);
+        flag = semctl(semid, 1 ,SETVAL, current + 1);
         if (flag==-1 || errno==ENOMSG){
             strerror(errno);
             exit(-1);
         }
-        printf("%d returned mutex\n", getpid());
+    //    printf("%d returned mutex\n", getpid());
 
         //return mutex
         sem_post(mutex);
@@ -73,7 +78,7 @@ printf("queue %d semaphres %d stats: %d-%d\n", msqid, semid, arg.array[0], arg.a
     }
     else{
         //5. give mutex
-        printf("%d returned mutex\n", getpid());
+     //   printf("%d returned mutex\n", getpid());
         sem_post(mutex);
     }
 

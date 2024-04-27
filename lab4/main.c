@@ -29,7 +29,7 @@ int main(int argc, char* argv[], char* envp[]){
     int flag   = 0; 
     key_t key  = 0;
 
-    sem_t* mutex = sem_open(MUTEX_NAME , O_CREAT, 0644, 1);
+    sem_t* mutex = sem_open(MUTEX_NAME , O_CREAT, 0666, 1);
     
     struct msqid_ds buf; 
     
@@ -51,6 +51,14 @@ int main(int argc, char* argv[], char* envp[]){
         strerror(errno);
         exit(-1);
     }
+    flag = semctl(semid, 0, SETVAL, 0);
+    flag = semctl(semid, 1, SETVAL, 0);
+    flag = semctl(semid, 0, GETALL, arg.array);
+    if(flag == -1){
+        strerror(errno);
+        exit(-1);
+    }
+
     if(arg.array != NULL){
         for (int i = 0; i < 2.; i++){ 
             printf("\t%d:%d\n", i, arg.array[i]);
