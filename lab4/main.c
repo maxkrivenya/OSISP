@@ -1,22 +1,4 @@
 #include "header.h"
-#define n 5
-
-//shared enum {false,true} choosing[n];
-//shared int number[n];
-
-//  choosing[i] = true;
-//  sem_close(mutex)
-//  number[i] = max(number[j=1->n]) + 1 (sup?)
-//  choosing[i] = false
-//  for(j in n){
-//          while(choosing[i]);
-//          while(number[j] && ((number[j],j) < (number[i],i));
-//  }
-//
-//  DO STUFF
-//
-//  number[i] = 0
-//
 
 int main(int argc, char* argv[], char* envp[]){
     printf(LINE_SEPARATOR);
@@ -33,24 +15,20 @@ int main(int argc, char* argv[], char* envp[]){
     
     struct msqid_ds buf; 
     
-    union semun arg;
+    union semun     arg;
     struct semid_ds semid_ds;
-    arg.buf = &semid_ds;
+    arg.buf =       &semid_ds;
 
     key = ftok(FTOK_1, FTOK_2);
 
-    //int semget(key_t key, int nsems, int semflg)
+    //creating semaphore set
     semid = semget(key, 2, IPC_CREAT | 0666);
     if(semid == -1){
         strerror(errno);
         exit(-1);
     }
 
-    flag = semctl(semid, 0, GETALL, arg.array);
-    if(flag == -1){
-        strerror(errno);
-        exit(-1);
-    }
+    //setting semaphores to 0
     flag = semctl(semid, 0, SETVAL, 0);
     flag = semctl(semid, 1, SETVAL, 0);
     flag = semctl(semid, 0, GETALL, arg.array);
@@ -58,7 +36,6 @@ int main(int argc, char* argv[], char* envp[]){
         strerror(errno);
         exit(-1);
     }
-
     if(arg.array != NULL){
         for (int i = 0; i < 2.; i++){ 
             printf("\t%d:%d\n", i, arg.array[i]);
@@ -67,12 +44,14 @@ int main(int argc, char* argv[], char* envp[]){
 
     printf(LINE_SEPARATOR);
 
+    //creating msg queue
     msqid = msgget(key, (IPC_CREAT | 0666));
     if(msqid == -1){
         strerror(errno);
         exit(-1);
     }
-pid_t pid = 0;
+
+    pid_t pid   = 0;
     int i       = 0;
     int id      = 0;
     int producer_counter = 0;

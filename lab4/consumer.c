@@ -1,7 +1,7 @@
 #include "header.h"
 
 int main(int argc, char* argv[], char* envp[]){
-    
+
     printf("consumer started\n");
     printf(LINE_SEPARATOR);
 
@@ -32,55 +32,58 @@ int main(int argc, char* argv[], char* envp[]){
         exit(-1);
     }
 
-    //1. take mutex 
-    
-    //printf("%s waiting for mutex...\n", argv[0]);
-    sem_wait(mutex);
-    //printf("%s obtained mutex...\n", argv[0]);
+    do{
+
+        //1. take mutex 
+        sem_wait(mutex);
 
 
-    //get semaphores
-    flag = semctl(semid, 0 ,GETALL, arg.array);
-    if(flag == -1){
-        strerror(errno);
-        exit(-1);
-    }
-    
-    printf("queue %d semaphres %d stats: %d-%d\n", msqid, semid, arg.array[0], arg.array[1]);
-    current = arg.array[1];
-
-    //2. if there is msg in msgq
-    if(arg.array[0] > arg.array[1]){
-
-        //3. TAKE msg
-        struct message msg;
-
-        flag = msgrcv(msqid, &msg, sizeof(msg), 1, IPC_NOWAIT);
-        if (flag==-1 || errno==ENOMSG){
+        //get semaphores
+        flag = semctl(semid, 0 ,GETALL, arg.array);
+        if(flag == -1){
             strerror(errno);
             exit(-1);
         }
 
-        //4. inc received
-        flag = semctl(semid, 1 ,SETVAL, current + 1);
-        if (flag==-1 || errno==ENOMSG){
-            strerror(errno);
-            exit(-1);
+        current = arg.array[1];
+
+        //2. if there is msg in msgq
+        if(arg.array[0] > arg.array[1]){
+
+            //3. TAKE msg
+            struct message msg;
+
+            flag = msgrcv(msqid, &msg, sizeof(msg), 1, IPC_NOWAIT);
+            if (flag==-1 || errno==ENOMSG){
+                strerror(errno);
+                exit(-1);
+            }
+
+            //4. inc received
+            flag = semctl(semid, 1 ,SETVAL, current + 1);
+            if (flag==-1 || errno==ENOMSG){
+                strerror(errno);
+                exit(-1);
+            }
+
+            //return mutex
+            sem_post(mutex);
+
+            //6. PARSE msg
+            printf(LINE_SEPARATOR);
+            printf("received message:\n");
+            msgprint(msg);
+            printf("updated received:%d\n", current + 1);
+            printf(LINE_SEPARATOR);
+
+
         }
-    //    printf("%d returned mutex\n", getpid());
-
-        //return mutex
-        sem_post(mutex);
-
-        //6. PARSE msg
-        (void)msgprint(msg);
-
-    }
-    else{
-        //5. give mutex
-     //   printf("%d returned mutex\n", getpid());
-        sem_post(mutex);
-    }
+        else{
+            //5. give mutex
+            sem_post(mutex);
+        }
+        sleep(1);
+    }while(!killed);
 
     printf("consumer exit\n");
     printf(LINE_SEPARATOR);

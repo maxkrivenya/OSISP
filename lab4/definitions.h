@@ -15,7 +15,6 @@
 #include <string.h>
 
 #include <signal.h>
-
 #include <semaphore.h>
 #include <fcntl.h>
 
