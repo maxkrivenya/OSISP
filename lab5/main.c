@@ -1,20 +1,18 @@
 #include "producer.h"
 
 
-int main(int argc, char* argv[], char* envp[]){
+int main(){
     printf(LINE_SEPARATOR);
     printf("main started\n");
     printf(LINE_SEPARATOR);
 
     sem_unlink(MUTEX_NAME);
-    int semid  = 0;
+    MAX_MSG_AMT_IN_QUEUE = 4;
     int msqid  = 0; 
     int flag   = 0; 
     key_t key  = 0;
 
     sem_t* mutex = sem_open(MUTEX_NAME , O_CREAT, 0666, 1);
-    
-    struct msqid_ds buf; 
     
     key = ftok(FTOK_1, FTOK_2);
 
@@ -121,7 +119,7 @@ int main(int argc, char* argv[], char* envp[]){
                                  if(get[0]=='p'){
                                      if(producers[id] != 0){
                                          producers_killed[id] = 1;
-                                         //printf("killed P%d - %lu\n",id, producers[id]);
+                                         printf("killed P%d - %lu\n",id, producers[id]);
                                          producers[id]=0;
                                      }else{
                                          printf("no such process!\n");
@@ -130,7 +128,7 @@ int main(int argc, char* argv[], char* envp[]){
                                  else{
                                      if(consumers[id] != 0){
                                          consumers_killed[id] = 1;
-                                         //printf("killed C%d - %lu\n",id,consumers[id]);
+                                         printf("killed C%d - %lu\n",id,consumers[id]);
                                          consumers[id]=0;
                                      }else{
                                          printf("no such process!\n");
@@ -151,7 +149,7 @@ int main(int argc, char* argv[], char* envp[]){
                          for (int i = 0; i < MAX_CHILD_AMT; i++) {
 
                              if(producers[i] != 0){ 
-                                 //printf("\tP%d-'%lu'\t",i,producers[i]);
+                                 printf("\tP%d-'%lu'\t",i,producers[i]);
                              }else{
                                  printf("\tP%d-'X'\t",i);
                              }
@@ -184,10 +182,11 @@ int main(int argc, char* argv[], char* envp[]){
                                          &producers[producer_counter], 
                                          NULL,
                                          producer,
-                                         (void*)&producers_killed[producer_counter]
+                                         (void*)&(producers_killed[producer_counter])
                                  );
                                  //if(flag==-1);
                                  producer_counter = -1;
+                                 consumer_counter = -1;
                              }
                              else{
                                  if(consumer_counter < 0){
@@ -202,10 +201,11 @@ int main(int argc, char* argv[], char* envp[]){
                                      break;
                                  }
 
-                                 flag = pthread_create(&consumers[consumer_counter], 
+                                 flag = pthread_create(
+                                         &consumers[consumer_counter], 
                                          NULL,
                                          consumer,
-                                         (void*)&consumers_killed[consumer_counter]
+                                         (void*)&(consumers_killed[consumer_counter])
                                  );
                                  //if(flag==-1);
                                  producer_counter = -1;
@@ -214,7 +214,7 @@ int main(int argc, char* argv[], char* envp[]){
                          }
                          break;
                      }
-                     /*
+                    /* 
             case '-':{
                          if(id == -1){id = 1;}
                          for(int i = 0; i < id; i++){
@@ -278,10 +278,17 @@ int main(int argc, char* argv[], char* envp[]){
                          break;
                      }
                      */
+            case 'u':{
+                         MAX_MSG_AMT_IN_QUEUE++;
+                         break;
+                     }
+            case 'd':{
+                         MAX_MSG_AMT_IN_QUEUE--;
+                         break;
+                     }
             default:{
                         printf("unknown command\n");
                         break;
-
                     }
         } 
 

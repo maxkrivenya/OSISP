@@ -25,7 +25,6 @@
 #define LINE_SEPARATOR "\n------------------------------------------------\n"
 #define FTOK_1 "main"
 #define FTOK_2 65
-#define MAX_MSG_AMT_IN_QUEUE 4
 #define MAX_CHILD_AMT 5
 
 struct message{

@@ -3,6 +3,7 @@
 //killing processes on loop-end
 volatile int producers_killed[MAX_CHILD_AMT];
 volatile int consumers_killed[MAX_CHILD_AMT];
+volatile int MAX_MSG_AMT_IN_QUEUE;
 
 //printing a message
 void msgprint(struct message msg){
